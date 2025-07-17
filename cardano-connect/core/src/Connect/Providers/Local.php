@@ -6,6 +6,7 @@ use WP_Query;
 use WPCC\Connect\Base;
 use WPCC\Connect\DTO\Pool;
 use WPCC\Connect\DTO\PoolId;
+use WPCC\Connect\DTO\PoolMetadata;
 use WPCC\Connect\Interfaces\StakePool;
 use WPCC\Connect\Responses\ResponsePool;
 use WPCC\Connect\Responses\ResponsePools;
@@ -47,7 +48,7 @@ class Local extends Base implements StakePool
 		return new ResponsePool( (bool) $pool, $pool);
 	}
 
-	public function getStakePoolStats(string $order = null, string $dir = 'asc'): ResponsePools {
+	public function getStakePoolStats(array $filters = null, string $order = null, string $dir = 'asc'): ResponsePools {
 		global $wpdb;
 		$fields = [
 			'a' => 'pool_id',
@@ -66,23 +67,49 @@ class Local extends Base implements StakePool
 			'n' => 'margin_cost',
 			'o' => 'fixed_cost',
 			'p' => 'synced_at',
+			'q' => 'metadata',
+			'r' => 'retirement',
 		];
 		if (! in_array( $order, $fields, true ) ) {
 			$order = 'live_stake';
 		}
 		$order_join = array_search($order, $fields);
-
 		$selects = [];
 		$joins = [];
+		$wheres = [];
 		foreach ($fields as $k => $f) {
 			$selects[] = "$k.meta_value $f";
 			$joins[] = "LEFT JOIN wp_postmeta $k ON wp_posts.ID = $k.post_ID AND $k.meta_key='$f'";
+			if ($filters) {
+				foreach ($filters as $filter) {
+					if ($filter['key'] === 's') {
+						$v = $filter['value'];
+						$wheres[] = "AND q.meta_value LIKE '%$v%'";
+					}
+					if ($f === $filter['key'] && $filter['value'] && $filter['key'] === 'live_saturation') {
+						$v = (float) $filter['value'];
+						$wheres[] = "AND CAST($k.meta_value AS DECIMAL(10,4)) BETWEEN 0 AND $v";
+					}
+					if ($filter['value'] && $filter['key'] === 'live_saturation_min') {
+						$v = (float) $filter['value'];
+						$wheres[] = "AND CAST(h.meta_value AS DECIMAL(10,4)) BETWEEN $v AND 1000";
+					}
+					if ($filter['key'] === 'no_metadata' && $f === 'metadata' && $filter['value'] === 'true') {
+						$s = '%s:6:"ticker";N%';
+						$wheres[] = "AND $k.meta_value NOT LIKE '$s'";
+					}
+					if ($filter['key'] === 'hide_retired' && $f === 'retirement' && $filter['value'] === 'true') {
+						$wheres[] = "AND $k.meta_value = 'a:0:{}'";
+					}
+				}
+			}
 		}
 		$query = "SELECT wp_posts.ID, wp_posts.post_type, "
 			.implode(",", $selects)
 			." FROM wp_posts "
 			.implode(" ", $joins)
-			." WHERE wp_posts.post_type = 'wpcc_pools'"
+			." WHERE wp_posts.post_type = 'wpcc_pools' "
+            .implode(" ", $wheres)
 			." ORDER BY $order_join.meta_value $dir";
 		$results = $wpdb->get_results($query);
 		$pools = [];
@@ -90,10 +117,14 @@ class Local extends Base implements StakePool
 			$arr = (array) $r;
 			unset($arr['ID'], $arr['post_type']);
 			if ($arr['pool_id']) {
+				$arr['retirement'] = json_decode($arr['retirement'], true) ?: [];
+				//$arr['metadata'] = json_decode($arr['metadata'], true) ?: [];
+				$arr['metadata'] = unserialize($arr['metadata']) ?: [];
+				$arr['metadata'] = new PoolMetadata(...$arr['metadata']);
 				$pools[] = new Pool( ...$arr );
 			}
 		}
-		return new ResponsePools(true, $pools, count($results));
+		return new ResponsePools(true, $pools, count($results), $query);
 	}
 
 	private function formatFilters(array $filters): array {

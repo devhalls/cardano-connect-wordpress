@@ -88,7 +88,7 @@ export const Pools = ({
             label: options.label_paginate_search_metadata,
             type: 'checkbox',
             key: 'no_metadata',
-            value: false,
+            value: true,
             order: 2,
         },
         {
@@ -107,7 +107,7 @@ export const Pools = ({
             max: 1000,
             order: 4,
             format: (v) => parseInt(v)/1000,
-            display: (v) => v != '0' ? '< ' + parseInt(v)/10 + '%' : 'any'
+            display: (v) => v != '0' ? '< ' + parseInt(v)/10 + '%' : 'any%'
         },
         {
             label: options.label_paginate_search_order,

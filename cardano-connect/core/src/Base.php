@@ -61,6 +61,7 @@ abstract class Base
 		self::SETTING_PREFIX.'label_paginate_search_metadata',
 		self::SETTING_PREFIX.'label_paginate_search_retired',
 		self::SETTING_PREFIX.'label_paginate_search_saturation',
+		self::SETTING_PREFIX.'label_paginate_search_saturation_min',
 		self::SETTING_PREFIX.'label_paginate_search_order',
 		self::SETTING_PREFIX.'label_paginate_search_update',
 		self::SETTING_PREFIX.'label_paginate_search_reset',
@@ -128,6 +129,7 @@ abstract class Base
 		'label_paginate_search_metadata',
 		'label_paginate_search_retired',
 		'label_paginate_search_saturation',
+		'label_paginate_search_saturation_min',
 		'label_paginate_search_order',
 		'label_paginate_search_update',
 		'label_paginate_search_reset',
@@ -673,13 +675,22 @@ abstract class Base
 		                        'note' => __('Text shown next to the retired checkbox field', 'cardano-connect')
 	                        ],
 	                        self::SETTING_PREFIX.'label_paginate_search_saturation' => [
-		                        'default' => __('Saturation', 'cardano-connect'),
-		                        'label' => __('Saturation search label', 'cardano-connect'),
+		                        'default' => __('Saturation max', 'cardano-connect'),
+		                        'label' => __('Saturation max search label', 'cardano-connect'),
 		                        'type' => 'text',
 		                        'rules' => [
 			                        'required',
 		                        ],
-		                        'note' => __('Text shown next to the saturation slider', 'cardano-connect')
+		                        'note' => __('Text shown next to the saturation maximum slider', 'cardano-connect')
+	                        ],
+	                        self::SETTING_PREFIX.'label_paginate_search_saturation_min' => [
+		                        'default' => __('Saturation min', 'cardano-connect'),
+		                        'label' => __('Saturation min search label', 'cardano-connect'),
+		                        'type' => 'text',
+		                        'rules' => [
+			                        'required',
+		                        ],
+		                        'note' => __('Text shown next to the saturation min  slider', 'cardano-connect')
 	                        ],
 	                        self::SETTING_PREFIX.'label_paginate_search_order' => [
 		                        'default' => __('Order', 'cardano-connect'),
@@ -1068,7 +1079,7 @@ abstract class Base
 		$mainnet_active = $this->getSetting(self::SETTING_PREFIX.'mainnet_active');
 		$testnet_suffix = $mainnet_active ? '' : '_testnet';
 		$endpoint = $this->getSetting(self::SETTING_PREFIX.'endpoint' . $testnet_suffix);
-		return new Upstream( $endpoint );
+		return new Upstream( $endpoint || '' );
 	}
 
 	/**

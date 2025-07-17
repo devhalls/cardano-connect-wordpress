@@ -118,9 +118,11 @@ class Plugin extends Base
     /**
      * Ran on activation.
      * Set default plugin options (existing options will not be updated).
+     * Set up Cron job.
      * @return void
      */
     public function onActivate(): void {
+		// Set WP options
         foreach ($this->settings as $setting) {
             $settings_fields = array_column(
                 $setting['sections'],
@@ -134,6 +136,10 @@ class Plugin extends Base
             }
             add_option($setting['name'], $defaults);
         }
+		// Schedule the Cron job every hour to start fetching the data
+	    if (!wp_next_scheduled('cardano_connect_cron_fetch_data')) {
+		    wp_schedule_event(time(), 'hourly', 'cardano_connect_cron_fetch_data');
+	    }
     }
 
     /**
@@ -141,4 +147,25 @@ class Plugin extends Base
      * @return void
      */
     public function onDeactivate(): void {}
+
+	/**
+	 * Ran on wp_schedule_event every hour.
+	 * @return void
+	 */
+	public function startFetchBatch(): void {
+		$this->fetchBatch();
+	}
+
+	/**
+	 * Fetch the stake pool data in batches of 100.
+	 * @param int $page
+	 * @return void
+	 */
+	public function fetchBatch(int $page = 1): void {
+		$response = ( new StakePool() )->syncPools($this->loadProvider(), 100, $page, 10);
+		if ($response->success && $response->total === 100) {
+			// Schedule next batch
+			wp_schedule_single_event(time() + 5, 'cardano_connect_cron_fetch_data_batch', ['page' => $page + 1]);
+		}
+	}
 }

@@ -61,10 +61,10 @@ export const formatNumber = (x: number): string => {
 export const formatNumberShort = (n: number, suffix: string = '', decimals: number = 0, uppercase: boolean = false) => {
     let suffixes = uppercase ? ['', 'K', 'M', 'B', 'T'] : ['', 'k', 'm', 'b', 't'];
     if (typeof n !== 'number') {
-        return (0).toFixed(decimals) + suffix;
+        return (0).toFixed(decimals) + (suffix || '');
     }
     if (n < 1000) {
-        return n.toFixed(decimals) + suffix;
+        return n.toFixed(decimals) + (suffix || '');
     }
     let index = suffix ? suffixes.indexOf(suffix) + 1 : 1;
     return formatNumberShort(n / 1000, suffixes[index], decimals, uppercase);
@@ -98,6 +98,24 @@ export const ucFirst = (string: string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+export const filterPaginatedRange = (data: any[], page: number, perPage: number) => {
+    if (perPage === 0) {
+        return data
+    }
+    const min = (perPage * page) - perPage
+    const max = perPage * page
+    return data.filter((a, i) => {
+        const index = i+1
+        return index <= max && index > min
+    })
+}
+
+export const getColor = (percentage: number = 0) => percentage > 90
+    ? 'rgb(217,130,4)'
+    : 85
+        ? 'rgb(222,143,27)'
+        : 'rgb(236,179,87)'
+
 export const convertToApiAsset = (asset: Asset): ApiAsset => {
     return {
         asset: asset.unit,
@@ -121,46 +139,123 @@ export const convertToApiAsset = (asset: Asset): ApiAsset => {
     }
 }
 
-export const filterPaginatedRange = (data: any[], page: number, perPage: number) => {
-    if (perPage === 0) {
-        return data
+export const convertPoolToGraphBar = (p: PoolData, yField: string): GraphBar<PoolData> => {
+    return {
+        id: p.pool_id,
+        y: p[yField],
+        data: p
     }
-    const min = (perPage * page) - perPage
-    const max = perPage * page
-    return data.filter((a, i) => {
-        const index = i+1
-        return index <= max && index > min
-    })
+}
+
+export const convertPoolToGraphTree = (p: PoolData, yField: string): GraphTreeNode<PoolData> => {
+    return {
+        type: 'leaf',
+        value: p[yField],
+        fill: getColor(),
+        stroke: getColor(),
+        data: p
+    }
+}
+
+export const convertPoolToGraphPlotPledge = (p: PoolData): GraphPlot<PoolData> => {
+    const percentage = Math.min(formatPercentageFromBig(p.live_pledge, p.live_stake), 100)
+    return {
+        x: formatNumberFromBig(p.live_stake),
+        y: formatNumberFromBig(p.live_pledge),
+        id: p.pool_id,
+        radius: 8,
+        fill: getColor(percentage),
+        stroke: getColor(percentage),
+        data: p
+    }
+}
+
+export const convertPoolToGraphPlotPledgeRation = (p: PoolData): GraphPlot<PoolData> => {
+    const maxSize = 30
+    const minSize = 4
+    const percentage = Math.min(formatPercentageFromBig(p.live_pledge, p.live_stake), 100)
+    const radius = Math.max(maxSize * (percentage / 100), minSize)
+    return {
+        ...convertPoolToGraphPlotPledge(p),
+        radius
+    }
 }
 
 export const classMap = {
-    // General use classes.
-    loader: 'wpcc-loader wpcc-card',
-    error: 'wpcc-error',
+    // General.
     row: 'wpcc-row',
     col: 'wpcc-col',
-    notFound: 'wpcc-not-found wpcc-card',
-    pagination: 'wpcc-pagination wpcc-card',
-    paginationContainer: 'wpcc-pagination-container',
-    paginationItems: 'wpcc-pagination-items',
-    paginationPaged: 'wpcc-pagination-paged',
-    paginationFiltersContainer: 'wpcc-pagination-filters-container',
-    paginationFiltersButtons: 'wpcc-pagination-filters-buttons',
-    paginationFilters: 'wpcc-pagination-filters',
-    paginationFilter: 'wpcc-pagination-filter',
-    paginationOrder: 'wpcc-pagination-filter-order',
-    paginationPage: 'wpcc-pagination-page',
-    paginationPrev: 'wpcc-pagination-prev',
-    paginationNext: 'wpcc-pagination-next',
-    paginationReset: 'wpcc-pagination-reset',
-    paginationUpdate: 'wpcc-pagination-update',
-    paginationTotal: 'wpcc-pagination-total',
-    paginationToggle: 'wpcc-pagination-toggle',
-    paginationToggleIcon: 'wpcc-icon wpcc-icon-filter',
-    paginationToggleIconClose: 'wpcc-icon wpcc-icon-filter-close',
+    card: 'wpcc-card',
+    cardDark: 'wpcc-card-dark',
+    notFound: 'wpcc-not-found wpcc-card-dark',
+    // Form elements.
+    input: 'wpcc-input',
+    checkbox: 'wpcc-checkbox',
+    range: 'wpcc-range',
+    select: 'wpcc-select',
+    selectWrapper: 'wpcc-select-wrapper',
+    // Loader component.
+    loader: 'wpcc-loader wpcc-card-dark',
+    // Copy component.
     copy: 'wpcc-copy',
+    // Icon component.
     icon: 'wpcc-icon',
-    linkIcon: 'wpcc-link-icon',
+    iconSmall: 'wpcc-icon-small',
+    twitterIcon: 'wpcc-icon-twitter',
+    githubIcon: 'wpcc-icon-github',
+    facebookIcon: 'wpcc-icon-facebook',
+    youtubeIcon: 'wpcc-icon-youtube',
+    telegramIcon: 'wpcc-icon-telegram',
+    discordIcon: 'wpcc-icon-discord',
+    linkIcon: 'wpcc-icon-link',
+    linkedinIcon: 'wpcc-icon-linkedin',
+    filterIcon: 'wpcc-icon-filter',
+    filterCloseIcon: 'wpcc-icon-filter-close',
+    retiredIcon: 'wpcc-icon-retired',
+    compareIcon: 'wpcc-icon-compare',
+    jsonIcon: 'wpcc-icon-json',
+    eyeIcon: 'wpcc-icon-eye',
+    closeIcon: 'wpcc-icon wpcc-icon-close',
+    addIcon: 'wpcc-icon wpcc-icon-add',
+    minusIcon: 'wpcc-icon wpcc-icon-minus',
+    infoIcon: 'wpcc-icon wpcc-icon-info',
+    scatterIcon: 'wpcc-icon wpcc-icon-scatter',
+    scatterRangeIcon: 'wpcc-icon wpcc-icon-scatter-range',
+    gridIcon: 'wpcc-icon wpcc-icon-grid',
+    // Button components.
+    btnGroup: 'wpcc-button-group',
+    btn: 'wpcc-button',
+    btnSquare: 'wpcc-button-square',
+    btnIcon: 'wpcc-button-icon',
+    btnIconActive: 'wpcc-button-icon-active',
+    btnPrimary: 'wpcc-button wpcc-button-primary',
+    actions: 'wpcc-actions',
+    actionsButton: 'wpcc-actions-button',
+    actionsButtonLight: 'wpcc-actions-button-light',
+    // Pagination.
+    paginator: {
+        container: 'wpcc-paginator-container',
+        header: 'wpcc-paginator-header',
+        body: 'wpcc-paginator-body',
+        controls: {
+            container: 'wpcc-paginator-controls-container',
+            number: 'wpcc-paginator-controls-page',
+            prev: 'wpcc-paginator-controls-prev',
+            next: 'wpcc-paginator-controls-next',
+            total: 'wpcc-paginator-controls-total',
+            grid: 'wpcc-paginator-controls-grid wpcc-button-icon wpcc-icon wpcc-icon-grid',
+            list: 'wpcc-paginator-controls-list wpcc-button-icon wpcc-icon wpcc-icon-list',
+            open: 'wpcc-paginator-controls-toggle wpcc-button-icon wpcc-icon wpcc-icon-filter',
+            close: 'wpcc-paginator-controls-toggle wpcc-button-icon wpcc-icon wpcc-icon-filter-close',
+        },
+        filters: {
+            container: 'wpcc-paginator-filters-container',
+            list: 'wpcc-paginator-filters-list',
+            buttons: 'wpcc-paginator-filters-buttons',
+            reset: 'wpcc-paginator-filters-reset',
+            update: 'wpcc-paginator-filters-update',
+        }
+    },
     // Connector component classes.
     container: 'connector-container',
     connected: 'connector-content connector-connected',
@@ -184,7 +279,7 @@ export const classMap = {
     assetsContainer: 'wpcc-assets-container',
     assetTitle: 'wpcc-assets-title',
     assetTitleText: 'wpcc-assets-title-text',
-    assetItem: 'wpcc-assets-item wpcc-card wpcc-row',
+    assetItem: 'wpcc-assets-item wpcc-card-dark wpcc-row',
     assetItemCol: 'wpcc-assets-item-col',
     assetItemImage: 'wpcc-assets-item-image',
     assetItemTitle: 'wpcc-assets-item-title',
@@ -194,7 +289,7 @@ export const classMap = {
     modal: 'wpcc-modal wpcc-card',
     modalHeader: 'wpcc-modal-header',
     modalTitle: 'wpcc-modal-title',
-    modalClose: 'wpcc-modal-close',
+    modalClose: 'wpcc-modal-close wpcc-button-icon wpcc-icon wpcc-icon-close',
     // Asset classes.
     assetBody: 'wpcc-asset-modal-body',
     assetBodyCol: 'wpcc-asset-modal-col',
@@ -213,7 +308,7 @@ export const classMap = {
     messageNotice: 'wpcc-message-notice',
     // Pool.
     pools: 'wpcc-pools',
-    pool: 'wpcc-pool wpcc-card',
+    pool: 'wpcc-pool wpcc-card-dark',
     poolComparing: 'wpcc-pool-comparing',
     poolImage: 'wpcc-pool-image',
     poolContent: 'wpcc-pool-content',
@@ -230,7 +325,7 @@ export const classMap = {
     poolDetail: 'wpcc-pool-detail',
     // DRep.
     dreps: 'wpcc-dreps',
-    drep: 'wpcc-drep wpcc-card',
+    drep: 'wpcc-drep wpcc-card-dark',
     drepId: 'wpcc-drep-id',
     drepImage: 'wpcc-drep-image',
     drepContent: 'wpcc-pool-content',
@@ -251,10 +346,6 @@ export const classMap = {
     stats: 'wpcc-stats',
     statsTitle: 'wpcc-stats-title',
     statsContent: 'wpcc-stats-content',
-    // Actions buttons component classes.
-    actions: 'wpcc-actions',
-    actionsButton: 'wpcc-actions-button',
-    actionsButtonLight: 'wpcc-actions-button-light',
     actionsButtonPlaceholder: 'wpcc-actions-button-placeholder',
     // Compare modal component
     compareButtonContainer: 'wpcc-compare-button-container',
@@ -263,6 +354,9 @@ export const classMap = {
     compareModalBody: 'wpcc-compare-modal-body',
     // Graphs
     graphContainer: 'wpcc-graph-container',
+    graphHover: 'wpcc-graph-hover',
     plotContainer: 'wpcc-plot-container',
     plotClose: 'wpcc-plot-close wpcc-icon wpcc-icon-close',
+    plotAdd: 'wpcc-plot-add wpcc-icon wpcc-icon-add',
+    plotTitle: 'wpcc-plot-title',
 }

@@ -5,7 +5,7 @@
 
 use WPCC\Connect\PostTypes\StakePool;
 
-$sync_items = !empty($_GET['sync_items']) && is_numeric($_GET['sync_items']) ? min([50, $_GET['sync_items']]) : 1;
+$sync_items = !empty($_GET['sync_items']) && is_numeric($_GET['sync_items']) ? min([50, $_GET['sync_items']]) : 50;
 $sync_item_ids = !empty($_GET['sync_item_ids']) ? [$_GET['sync_item_ids']] : null;
 $sync_start = !empty($_GET['sync_start']) && is_numeric($_GET['sync_start']) ? $_GET['sync_start'] : null;
 $sync_loop = !empty($_GET['sync_loop']) && is_numeric($_GET['sync_loop']) ? min([50, $_GET['sync_loop']]) : 1;
@@ -17,8 +17,8 @@ $response = $sync_start
 ?>
 
 <form action="<?php echo $this->getSettingUrl() ?>#pool-import" method="get" class="wpcc-section" id="pool-import">
-    <h3><?php esc_html_e("Sync pools", 'cardano-connect') ?></h3>
-    <p><?php esc_html_e("Use these controls to manually sync pool data from the data provider.", 'cardano-connect') ?></p>
+    <h3><?php esc_html_e("Sync pools manually", 'cardano-connect') ?></h3>
+    <p><?php esc_html_e("Use these controls to manually sync pool data from the data provider. Use with CAUTION, the number of pages, loops and items depends on your servers resources. We recommend no more than 100 items at a time, unless you have a lot of server resource. ", 'cardano-connect') ?></p>
 
     <div class="wpcc-row">
         <div class="wpcc-col">

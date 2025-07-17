@@ -46,6 +46,7 @@ declare type Options = {
     label_paginate_search_metadata: string
     label_paginate_search_retired: string
     label_paginate_search_saturation: string
+    label_paginate_search_saturation_min: string
     label_paginate_search_order: string
     label_paginate_search_update: string
     label_paginate_search_reset: string
@@ -295,6 +296,8 @@ declare type UxState = {
     compareModal: 'pools' | 'dreps' | null
     comparePools: PoolData[] | null
     compareDreps: DrepData[] | null
+    comparePoolFilters?: FilterPost[] | null
+    compareDrepFilters?: FilterPost[] | null
 }
 declare type OptionState = Options
 declare type UserState = {
@@ -399,20 +402,22 @@ declare interface ComponentPaginator<T> {
 declare interface ComponentFilter {
     filter: Filter,
     setFilter: (filter: Filter) => void
-    key?: string
+    prefix?: string
 }
 declare interface ComponentDataRows {
     rows: {
-        title: string | React.ReactElement,
-        data: string | number | React.ReactElement,
+        title: string,
+        data: string | number,
+        copy?: boolean
     }[],
     className?: string
 }
+
 // Graph components
 
-declare interface GraphScatterComponent<T, P> {
-    width: number
-    height: number
+declare interface GraphScatterComponent<T> {
+    width?: number
+    height?: number
     data: T[]
     color?: string
     margin?: GraphMargin
@@ -425,10 +430,53 @@ declare interface GraphScatterComponent<T, P> {
         tick?: GraphTick
         label?: GraphLabel
         margin?: GraphMargin
-    },
-    ToolTip?: GraphToolTip<P>
+    }
+    axisMax?: (x: number) => number
+    scaleMax?: number
+    ToolTip?: ({ ...GraphToolTip}) => React.ReactElement
 }
 
+declare interface GraphCircularBarComponent<T> {
+    width?: number
+    height?: number
+    data: T[]
+    color?: string
+    axisMax?: (x: number) => number
+    innerRadius?: number
+    barSpacing?: number
+    ToolTip?: ({ ...GraphToolTip}) => React.ReactElement
+}
+
+declare interface GraphTreemapComponent<T> {
+    width?: number
+    height?: number
+    data: GraphTreeNode<T>
+    color?: string
+    barSpacing?: number
+    ToolTip?: ({ ...GraphToolTip}) => React.ReactElement
+}
+
+declare interface GraphDensity2dComponent<T> {
+    width?: number
+    height?: number
+    data: GraphPlot<T>[]
+    color?: string
+    margin?: GraphMargin
+    axisX?: {
+        tick?: GraphTick
+        label?: GraphLabel
+        margin?: GraphMargin
+    }
+    axisY?: {
+        tick?: GraphTick
+        label?: GraphLabel
+        margin?: GraphMargin
+    }
+    axisMax?: (x: number) => number
+    binSize?: number
+}
+
+declare type GraphComponent = GraphScatterComponent<GraphPlot<PoolData>> | GraphCircularBarComponent<GraphBar<PoolData>> | GraphTreemapComponent<PoolData> | GraphDensity2dComponent<PoolData>
 
 // Graph elements
 
@@ -448,8 +496,22 @@ declare type GraphPlot<T> = {
     data: T|null
 }
 
+declare type GraphBar<T> = {
+    // Position
+    id: string
+    y: number
+    // Styling
+    opacity?: number
+    stroke?: string
+    fill?: string
+    fillOpacity?: string
+    strokeWidth?: number
+    // Original data
+    data: T|null
+}
+
 declare interface GraphToolTip<T> {
-    plot: GraphPlot<T>|null,
+    plot: GraphPlot<T>|GraphBar<T>|null,
     hide: () => void
 }
 
@@ -477,4 +539,18 @@ declare type GraphMargin = {
 declare type GraphPosition = {
     x?: string
     y?: string
+}
+
+declare type GraphTreeNode<T> = {
+    type: 'node' | 'leaf'
+    value: number
+    // Styling
+    opacity?: number
+    stroke?: string
+    fill?: string
+    fillOpacity?: string
+    strokeWidth?: number
+    // Original data
+    data?: T
+    children?: GraphTreeNode<T>[]
 }

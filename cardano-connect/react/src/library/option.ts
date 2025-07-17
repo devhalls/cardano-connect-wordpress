@@ -58,6 +58,7 @@ const initialState: OptionState = {
     label_paginate_search_metadata: null,
     label_paginate_search_retired: null,
     label_paginate_search_saturation: null,
+    label_paginate_search_saturation_min: null,
     label_paginate_search_order: null,
     label_paginate_search_update: null,
     label_paginate_search_reset: null,

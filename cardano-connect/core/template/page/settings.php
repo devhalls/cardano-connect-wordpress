@@ -40,5 +40,6 @@
         </div>
     </div>
 
+	<?php $this->getTemplate('partial/setting-cron-schedule', [], true); ?>
     <?php $this->getTemplate('partial/setting-import', [], true); ?>
 </div>

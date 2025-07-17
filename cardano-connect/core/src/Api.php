@@ -356,14 +356,16 @@ class Api extends Base
 
 	public function getStakePoolStats( $data ): array
 	{
-		$result = $this->connectPoolProvider->getStakePoolStats();
+		$filters = $data->get_param('filters') ?: [];
+		$result = $this->connectPoolProvider->getStakePoolStats($filters);
 		if ($result->success) {
 			return $this->returnResponse(
 				true,
 				[
 					'total' => $result->total,
 					'items' => (array) $result->response
-				]
+				],
+				$result->message
 			);
 		}
 		return $this->returnResponse(
@@ -489,5 +491,12 @@ class Api extends Base
 			}
 		}
 		return $allowed;
+	}
+
+	// CRON Job methods
+
+	public function cron(): void
+	{
+
 	}
 }

@@ -86,6 +86,39 @@
     margin: 0
 }
 
+.wpcc-row .widefat {
+    border: 0;
+}
+.wpcc-row .widefat th {
+    background-color: #eae9e9 !important;
+    border: 0;
+    padding-left: 10px;
+    font-weight: bold;
+}
+.wpcc-row .widefat th:first-child,
+.wpcc-row .widefat td:first-child {
+    border-radius: 16px 0 0 16px;
+}
+.wpcc-row .widefat th:last-child,
+.wpcc-row .widefat td:last-child {
+    border-radius: 0 16px 16px 0;
+}
+
+.wpcc-row .widefat tbody tr:nth-of-type(even) {
+    background-color: #f8f8f8 !important;
+}
+.wpcc-row .widefat tbody tr.active {
+    background-color: #eef6ed !important;
+}
+
+.wpcc-row .widefat tbody .wpcc-pre {
+    background-color: #ffffff !important;
+    border-radius: 16px;
+    font-size: 10px;
+    padding: 8px;
+    margin-top: 4px;
+}
+
 /** Elements **/
 .wpcc-code {
     display: block;
