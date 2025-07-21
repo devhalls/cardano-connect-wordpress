@@ -3,13 +3,13 @@ Contributors:      PendulumDev
 Donate link:       https://pendulumdev.co.uk/
 Tags:              Web3, Cardano, Wallet Connections, Token Gate
 Requires at least: 6.1
-Tested up to:      6.6
+Tested up to:      6.8
 Stable tag:        1.0.0
 Requires PHP:      8.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-Cardano blockchain wallet login for your WordPress website, supporting all major CIP-30 complaint wallets.
+Cardano blockchain wallet login and data indexing for your WordPress website. Bring the web3 world to your website.
 
 == Description ==
 

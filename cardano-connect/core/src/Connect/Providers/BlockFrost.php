@@ -108,7 +108,7 @@ class BlockFrost extends Base implements Account, Asset, StakePool, DrepInterfac
 	// Drep interface.
 
 
-	public function getDreps( int $page = 1, int $count = 10, ?array $filters = null ): ResponseDreps
+	public function getDReps( int $page = 1, int $count = 10, ?array $filters = null ): ResponseDreps
 	{
 		$response = $this->get('governance/dreps', [
 			'page' => $page,
@@ -128,7 +128,7 @@ class BlockFrost extends Base implements Account, Asset, StakePool, DrepInterfac
 		);
 	}
 
-	public function getDrep( string $drep_id ): ResponseDrep
+	public function getDRep( string $drep_id ): ResponseDrep
 	{
 		$response = $this->get( 'governance/dreps/' . $drep_id );
 		$data_arr = $response->success ? (array) $response->response : null;

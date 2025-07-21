@@ -1,18 +1,19 @@
-<?php
+<?php use WPCC\Plugin;
+
 /**
- * Plugin Name:       Cardano Connect
- * Plugin URI:        https://pendulumdev.co.uk
- * Description:       Cardano blockchain wallet login for your WordPress website, supporting all major CIP-30 complaint wallets. Bring the web3 world to your website and give gated content access to your web3 users, all using the default WordPress users and roles.
+ * Plugin Name: Cardano Connect
+ * Plugin URI: https://pendulumdev.co.uk
+ * Description: Cardano blockchain wallet login and data indexing for your WordPress website, supporting all major CIP-30 complaint wallets. Bring the web3 world to your website and give gated content access to your web3 users, all using the default WordPress users and roles.
  * Requires at least: 6.1
- * Requires PHP:      8.0
- * Version:           0.1.0
- * Author:            PendulumDev
- * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       cardano-connect
- * Domain Path:       /languages
+ * Requires PHP: 8.0
+ * Version: 1.0.0
+ * Author: PendulumDev
+ * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: cardano-connect
+ * Domain Path: /languages
  *
- * @package CardanoConnect
+ * @package WPCC
  */
 
 /**
@@ -40,28 +41,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Bootstrap the plugin.
  */
-if ( ! class_exists( 'WPCC\Plugin' ) ) {
+if ( ! class_exists( Plugin::class ) ) {
 
-	define('WPCC_DIR', __DIR__);
-    require 'core/vendor/autoload.php';
-    $plugin = new WPCC\Plugin();
+	define( 'WPCC_DIR', __DIR__ );
+	require 'core/vendor/autoload.php';
+	$plugin = new WPCC\Plugin();
 
-    /**
-     * Plugin lifecycle hooks.
-     */
-    register_activation_hook(__FILE__, [$plugin, 'onActivate']);
-    register_deactivation_hook(__FILE__, [$plugin, 'onDeactivate']);
-    register_uninstall_hook(__FILE__, 'onWPCCPluginUninstall');
+	/**
+	 * Plugin lifecycle hooks.
+	 */
+	register_activation_hook( __FILE__, [ $plugin, 'onActivate' ] );
+	register_deactivation_hook( __FILE__, [ $plugin, 'onDeactivate' ] );
+	register_uninstall_hook( __FILE__, 'onWPCCPluginUninstall' );
 
-    /**
-     * Hook uninstall (plugin deleted).
-     * @return void
-     */
-    function onWPCCPluginUninstall() {
-        foreach (WPCC\Base::SETTING_FIELD_NAMES as $setting) {
-            delete_option($setting);
-        }
-    }
+	/**
+	 * Hook uninstall (plugin deleted).
+	 * Deletes all plugin options values.
+	 * Remove all plugin scheduled events.
+	 * @return void
+	 */
+	function onWPCCPluginUninstall(): void {
+		foreach ( WPCC\Base::SETTING_FIELD_NAMES as $setting ) {
+			delete_option( $setting );
+		}
+		wp_unschedule_hook( 'cardano_connect_cron_fetch_data' );
+		wp_unschedule_hook( 'cardano_connect_cron_fetch_data_batch' );
+	}
 
 	/**
 	 * Start the plugin

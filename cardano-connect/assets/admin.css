@@ -15,6 +15,7 @@
     padding: 24px;
     background-color: white;
     box-shadow: 0 0 12px 4px rgba(65, 65, 65, 0.1);
+    position: relative;
 }
 .wpcc-section-small {
     margin-bottom: 18px !important;
@@ -26,8 +27,12 @@
 .wpcc-section-success {
     border-left: 12px solid #00a32a;
 }
+.wpcc-section-error {
+    border-left: 12px solid #db1717;
+}
 .wpcc-section-small.wpcc-section-warning,
-.wpcc-section-small.wpcc-section-success {
+.wpcc-section-small.wpcc-section-success,
+.wpcc-section-small.wpcc-section-error {
     border-left-width: 8px;
 }
 
@@ -40,6 +45,17 @@
 .wpcc-content > *:last-child,
 .wpcc-supporter-item > *:last-child {
     margin-bottom: 0;
+}
+.wpcc-section-actions {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+.wpcc-section-actions .wpcc-section {
+    position: absolute;
+    white-space: nowrap;
+    right: 0;
+    top: calc(100% + 16px);
 }
 .wpcc-row {
     display: flex;
@@ -111,7 +127,7 @@
     background-color: #eef6ed !important;
 }
 
-.wpcc-row .widefat tbody .wpcc-pre {
+.wpcc-row .widefat tbody .wpcc-params {
     background-color: #ffffff !important;
     border-radius: 16px;
     font-size: 10px;
