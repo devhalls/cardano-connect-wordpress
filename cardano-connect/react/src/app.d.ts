@@ -29,6 +29,7 @@ declare type Options = {
     label_connect_cancel: string
     label_disconnect: string
     label_empty: string
+    label_connect_prompt: string
     label_disconnect_prompt: string
     label_disconnected_prompt: string
     label_error: string
@@ -333,6 +334,7 @@ declare interface ComponentPools {
     whitelistString?: string,
     perPage?: number
     notFound?: string
+    view?: boolean
     pools?: PoolData[]
 }
 declare interface ComponentPool {

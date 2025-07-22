@@ -123,20 +123,24 @@ export const Paginator = ({
                             {options.label_paginate_next}
                         </button>
                         <span className={classMap.paginator.controls.total}>{total} {options.label_paginate_items}</span>
-                        <div className={classMap.btnGroup}>
-                            <button
-                                className={`${classMap.paginator.controls.grid} ${viewMode === 'grid' ? 'wpcc-button-icon-active' : null}`}
-                                onClick={() => setViewMode('grid')}
-                            ></button>
-                            <button
-                                className={`${classMap.paginator.controls.list} ${viewMode === 'list' ? 'wpcc-button-icon-active' : null}`}
-                                onClick={() => setViewMode('list')}
-                            ></button>
-                            {defaultFilters && options.pools_data_source === 'local_wp' ? <button
-                                className={showFilters ? classMap.paginator.controls.open : classMap.paginator.controls.close}
-                                onClick={() => setShowFilters(!showFilters)}
-                            ></button> : null}
-                        </div>
+                        {defaultFilters && options.pools_data_source === 'local_wp' ? <button
+                            className={showFilters ? classMap.paginator.controls.open : classMap.paginator.controls.close}
+                            onClick={() => setShowFilters(!showFilters)}
+                        ></button> : null}
+                        {/*<div className={classMap.btnGroup}>*/}
+                            {/*<button*/}
+                            {/*    className={`${classMap.paginator.controls.grid} ${viewMode === 'grid' ? 'wpcc-button-icon-active' : null}`}*/}
+                            {/*    onClick={() => setViewMode('grid')}*/}
+                            {/*></button>*/}
+                            {/*<button*/}
+                            {/*    className={`${classMap.paginator.controls.list} ${viewMode === 'list' ? 'wpcc-button-icon-active' : null}`}*/}
+                            {/*    onClick={() => setViewMode('list')}*/}
+                            {/*></button>*/}
+                            {/*{defaultFilters && options.pools_data_source === 'local_wp' ? <button*/}
+                            {/*    className={showFilters ? classMap.paginator.controls.open : classMap.paginator.controls.close}*/}
+                            {/*    onClick={() => setShowFilters(!showFilters)}*/}
+                            {/*></button> : null}*/}
+                        {/*</div>*/}
                     </div>
                     {defaultFilters && showFilters ? (
                         <div className={classMap.paginator.filters.container}>

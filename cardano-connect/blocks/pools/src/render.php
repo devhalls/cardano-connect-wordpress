@@ -12,5 +12,6 @@
     data-whitelist="<?php echo esc_attr( $attributes['whitelist'] ?? null ); ?>"
     data-per_page="<?php echo esc_attr( $attributes['per_page'] ?? 10 ); ?>"
     data-not_found="<?php echo esc_attr( $attributes['not_found'] ?? null ); ?>"
+    data-view="<?php echo esc_attr( $attributes['view'] ?? false ); ?>"
 >
 </div>

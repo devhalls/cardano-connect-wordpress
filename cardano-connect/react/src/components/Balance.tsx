@@ -52,11 +52,7 @@ export const Balance = ({className}: ComponentBalance) => {
                         </div>
                     </div>
                     <div className={classMap.balanceRow}>
-                        <div className={classMap.balanceCol}>Network:</div>
-                        <div className={classMap.balanceCol}>{network}</div>
-                    </div>
-                    <div className={classMap.balanceRow}>
-                        <div className={classMap.balanceCol}>Wallet:</div>
+                        <div className={classMap.balanceCol}>Connect with:</div>
                         <div className={classMap.row}>
                             <img width={18} height={18} src={wallet.icon} alt={wallet.name}/>
                             {ucFirst(user.web3.cardano_connect_wallet)}

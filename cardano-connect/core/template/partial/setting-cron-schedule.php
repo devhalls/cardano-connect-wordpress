@@ -13,10 +13,10 @@ if ( ! $cron ) {
 <div class="wpcc-section" id="cron-schedule">
     <h3><?php esc_html_e( "Sync pools schedule", 'cardano-connect' ) ?></h3>
     <div class="wpcc-section-actions">
-        <button id="wpcc-trigger-cron" class="button button-primary">Run cron now</button>
+        <button id="wpcc-trigger-cron" class="button button-primary">Reset Cardano Connect Cron?</button>
         <div id="wpcc-trigger-message"></div>
     </div>
-    <p><?php esc_html_e( "This table displays the WordPress scheduled events list. Events related to the Cardano Connect plugin are highlighted in green.", 'cardano-connect' ) ?></p>
+    <p><?php esc_html_e( "This table displays the WordPress scheduled events list. Events related to the Cardano Connect plugin are highlighted in green. You can reset the Cron tasks for this pluin using the button above. This will stop any current batch process and start the imports from the beginning (useful if you want to start a batch again before the next default daily batch schedule.).", 'cardano-connect' ) ?></p>
     <div class="wpcc-row">
         <table class="widefat">
             <thead>
@@ -37,8 +37,8 @@ if ( ! $cron ) {
 					foreach ( $events as $event ) :
 						?>
                         <tr class="<?php echo $active ? 'active' : 'inactive' ?>">
-                            <td><?php echo esc_html($hook) ?></td>
-                            <td><?php echo esc_html(gmdate( 'Y-m-d H:i:s', $timestamp )) ?></td>
+                            <td><?php echo esc_html( $hook ) ?></td>
+                            <td><?php echo esc_html( gmdate( 'Y-m-d H:i:s', $timestamp ) ) ?></td>
                             <td>
 								<?php if ( $active === 'cardano_connect_cron_fetch_data' ) : ?>
 									<?php esc_html_e( "Cardano Connect event - Starts the batch fetch process. After fetching the first batch this will schedule the chain cardano_connect_cron_fetch_data_batch until complete.", 'cardano-connect' ) ?>
@@ -47,9 +47,9 @@ if ( ! $cron ) {
 								<?php endif ?>
 								<?php if ( $event['args'] ) : ?>
                                     <div class="wpcc-params">
-                                        <?php foreach ($event['args'] as $name => $arg) : ?>
-                                            <?php echo esc_html($name) ?> = <?php echo esc_html($arg) ?><br/>
-                                        <?php endforeach ?>
+										<?php foreach ( $event['args'] as $name => $arg ) : ?>
+											<?php echo esc_html( $name ) ?> = <?php echo esc_html( $arg ) ?><br/>
+										<?php endforeach ?>
                                     </div>
 								<?php endif ?>
                             </td>

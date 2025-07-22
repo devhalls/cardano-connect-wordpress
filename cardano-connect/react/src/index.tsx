@@ -87,6 +87,9 @@ for (let i = 0; i < poolsElements.length; i++) {
     const notFound: string = poolsElements[i].getAttribute('data-not_found')
         ? poolsElements[i].getAttribute('data-not_found')
         : undefined
+    const view: boolean = poolsElements[i].getAttribute('data-view')
+        ? true
+        : undefined
     pools.render(
         <React.StrictMode>
             <MeshProvider>
@@ -95,6 +98,7 @@ for (let i = 0; i < poolsElements.length; i++) {
                         <Pools
                             perPage={perPage}
                             notFound={notFound}
+                            view={view}
                             whitelistString={poolsElements[i].getAttribute('data-whitelist')}
                         />
                     </PersistGate>

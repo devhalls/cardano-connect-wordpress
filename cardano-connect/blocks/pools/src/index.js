@@ -14,6 +14,9 @@ registerBlockType( metadata.name, {
 		},
 		not_found: {
 			type: 'string',
+		},
+		view: {
+			type: 'boolean',
 		}
 	},
 	edit: Edit,

@@ -3,6 +3,7 @@ import {classMap, filterPaginatedRange, translateError} from "../library/utils";
 import {backendGetPools} from "../library";
 import {Paginator} from "./common/Paginator";
 import {Pool as PoolComponent} from "./Pool";
+import {PoolMini as PoolMiniComponent} from "./PoolMini";
 import {useWallet} from "@meshsdk/react";
 import {Transaction} from "@meshsdk/core";
 import {useAppDispatch, useAppSelector} from "../library/state";
@@ -14,6 +15,7 @@ export const Pools = ({
     whitelistString = null,
     perPage = 10, // Set to 0 to disable pagination
     notFound,
+    view,
     pools
 }: ComponentPools) => {
 
@@ -114,7 +116,7 @@ export const Pools = ({
             type: 'select',
             key: 'orderby',
             value: 'random',
-            className: classMap.paginationOrder,
+            className: '',
             order: 5,
             options: [
                 {
@@ -140,12 +142,21 @@ export const Pools = ({
     return pools ? (
         <>
             {pools.length > 0 ? pools.map(((p, i) => (
-                <PoolComponent
-                    key={p.pool_id}
-                    poolId={p.pool_id}
-                    index={i}
-                    delegateStake={delegateStake}
-                />
+                <>
+                    {view ?
+                        <PoolMiniComponent
+                            key={p.pool_id}
+                            poolId={p.pool_id}
+                            index={i}
+                            delegateStake={delegateStake}
+                        /> : <PoolComponent
+                            key={p.pool_id}
+                            poolId={p.pool_id}
+                            index={i}
+                            delegateStake={delegateStake}
+                        />
+                    }
+                </>
             ))) : (
                 <div className={classMap.notFound}>{notFound || options.label_no_pools}</div>
             )}
@@ -158,12 +169,21 @@ export const Pools = ({
             notFound={notFound || options.label_no_pools}
             defaultFilters={filters}
             renderer={(p: Pool, i: number) =>
-                <PoolComponent
-                    key={p.pool_id}
-                    poolId={p.pool_id}
-                    index={i}
-                    delegateStake={delegateStake}
-                />
+                <>
+                    {view ?
+                        <PoolMiniComponent
+                            key={p.pool_id}
+                            poolId={p.pool_id}
+                            index={i}
+                            delegateStake={delegateStake}
+                        /> : <PoolComponent
+                            key={p.pool_id}
+                            poolId={p.pool_id}
+                            index={i}
+                            delegateStake={delegateStake}
+                        />
+                    }
+                </>
             }
         />
     )

@@ -230,6 +230,7 @@ export const classMap = {
     btnIconActive: 'wpcc-button-icon-active',
     btnPrimary: 'wpcc-button wpcc-button-primary',
     actions: 'wpcc-actions',
+    actionsSmall: 'wpcc-actions-small',
     actionsButton: 'wpcc-actions-button',
     actionsButtonLight: 'wpcc-actions-button-light',
     // Pagination.
@@ -240,20 +241,21 @@ export const classMap = {
         controls: {
             container: 'wpcc-paginator-controls-container',
             number: 'wpcc-paginator-controls-page',
-            prev: 'wpcc-paginator-controls-prev',
-            next: 'wpcc-paginator-controls-next',
+            prev: 'wpcc-paginator-controls-prev wpcc-button',
+            next: 'wpcc-paginator-controls-next wpcc-button',
             total: 'wpcc-paginator-controls-total',
             grid: 'wpcc-paginator-controls-grid wpcc-button-icon wpcc-icon wpcc-icon-grid',
             list: 'wpcc-paginator-controls-list wpcc-button-icon wpcc-icon wpcc-icon-list',
-            open: 'wpcc-paginator-controls-toggle wpcc-button-icon wpcc-icon wpcc-icon-filter',
-            close: 'wpcc-paginator-controls-toggle wpcc-button-icon wpcc-icon wpcc-icon-filter-close',
+            open: 'wpcc-paginator-controls-toggle wpcc-button-icon wpcc-button-icon-gray wpcc-icon wpcc-icon-filter',
+            close: 'wpcc-paginator-controls-toggle wpcc-button-icon wpcc-button-icon-gray wpcc-icon wpcc-icon-filter-close',
         },
         filters: {
             container: 'wpcc-paginator-filters-container',
             list: 'wpcc-paginator-filters-list',
+            item: 'wpcc-paginator-filters-item',
             buttons: 'wpcc-paginator-filters-buttons',
-            reset: 'wpcc-paginator-filters-reset',
-            update: 'wpcc-paginator-filters-update',
+            reset: 'wpcc-paginator-filters-reset wpcc-button',
+            update: 'wpcc-paginator-filters-update wpcc-button wpcc-button-primary',
         }
     },
     // Connector component classes.
@@ -309,6 +311,7 @@ export const classMap = {
     // Pool.
     pools: 'wpcc-pools',
     pool: 'wpcc-pool wpcc-card-dark',
+    poolMini: 'wpcc-pool wpcc-pool-mini wpcc-card-dark',
     poolComparing: 'wpcc-pool-comparing',
     poolImage: 'wpcc-pool-image',
     poolContent: 'wpcc-pool-content',

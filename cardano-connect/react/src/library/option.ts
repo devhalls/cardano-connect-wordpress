@@ -18,6 +18,7 @@ const initialState: OptionState = {
     label_connect_cancel: null,
     label_empty: null,
     label_disconnect: null,
+    label_connect_prompt: null,
     label_disconnect_prompt: null,
     label_disconnected_prompt: null,
     label_error: null,

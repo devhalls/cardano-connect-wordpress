@@ -45,6 +45,7 @@ abstract class Base {
 		self::SETTING_PREFIX . 'label_connect_cancel',
 		self::SETTING_PREFIX . 'label_disconnect',
 		self::SETTING_PREFIX . 'label_empty',
+		self::SETTING_PREFIX . 'label_connect_prompt',
 		self::SETTING_PREFIX . 'label_disconnect_prompt',
 		self::SETTING_PREFIX . 'label_disconnected_prompt',
 		self::SETTING_PREFIX . 'label_error',
@@ -113,6 +114,7 @@ abstract class Base {
 		'label_connect_cancel',
 		'label_disconnect',
 		'label_empty',
+		'label_connect_prompt',
 		'label_disconnect_prompt',
 		'label_disconnected_prompt',
 		'label_error',
@@ -555,6 +557,18 @@ abstract class Base {
 								'args'  => [
 									'class' => 'wpcc-row-title',
 								]
+							],
+							self::SETTING_PREFIX . 'label_connect_prompt'                   => [
+								'default' => __( 'Connect your wallet!', 'cardano-connect' ),
+								'label'   => __( 'Connect wallet prompt', 'cardano-connect' ),
+								'type'    => 'text',
+								'rules'   => [
+									'required',
+								],
+								'note'    => __(
+									'Text shown when user is not connect but we prompt them to connect',
+									'cardano-connect'
+								)
 							],
 							self::SETTING_PREFIX . 'label_disconnect_prompt'                => [
 								'default' => __( 'Are you sure you would like to disconnect?', 'cardano-connect' ),

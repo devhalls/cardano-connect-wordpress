@@ -250,6 +250,9 @@
     background-size: 22px;
     background-position: center;
 }
+.wpcc-button-icon-gray {
+    background-color: var(--wpcc-primary-gray-light);
+}
 .wpcc-button-icon:hover {
     background-color: var(--wpcc-primary-gray);
 }
@@ -265,7 +268,8 @@
     cursor: not-allowed;
 }
 
-.wpcc-actions {
+.wpcc-actions,
+.wpcc-actions-small {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -273,6 +277,10 @@
     gap: calc(var(--wpcc-base-sizing) / 2);
     padding: calc(var(--wpcc-base-sizing)) 0;
     border-top: 1px solid var(--wpcc-primary-gray);
+}
+.wpcc-actions-small {
+    padding: 0;
+    border-top: none;
 }
 .wpcc-actions-button,
 .wpcc-actions-button-light,
@@ -308,54 +316,54 @@
 
 /** Pagination component **/
 
-.wpcc-pagination {
+.wpcc-paginator-header {
     display: flex;
     flex-direction: column;
     width: 100%;
     box-sizing: border-box;
     gap: calc(var(--wpcc-base-sizing) / 2);
 }
-.wpcc-pagination-paged .wpcc-pagination-total {
-    margin-left: auto;
-    text-align: center;
-    line-height: 1;
-    font-size: .8rem;
-}
-.wpcc-pagination-paged {
-    width: 100%;
+.wpcc-paginator-controls-container {
     display: flex;
     align-items: center;
     gap: calc(var(--wpcc-base-sizing) / 2);
 }
-.wpcc-pagination-page {
+.wpcc-paginator-controls-page {
     white-space: nowrap;
     display: flex;
     align-items: center;
     gap: calc(var(--wpcc-base-sizing) / 4);
 }
-.wpcc-pagination-update {}
-.wpcc-pagination-reset {
-    white-space: nowrap;
+.wpcc-paginator-controls-page input {
+    border: var(--wpcc-primary-dark-color) thin solid;
 }
-.wpcc-pagination-filters-container {
+.wpcc-paginator-controls-total {
+    margin-left: auto;
+    text-align: center;
+    line-height: 1;
+    font-size: .8rem;
+}
+
+.wpcc-paginator-filters-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: calc(var(--wpcc-base-sizing) / 2);
+    margin-bottom: calc(var(--wpcc-base-sizing) / 4);
 }
-.wpcc-pagination-filters-buttons {
+.wpcc-paginator-filters-buttons {
     display: flex;
     align-items: flex-start;
-    gap: calc(var(--wpcc-base-sizing) / 2);
+    gap: calc(var(--wpcc-base-sizing) / 4);
+    margin-top: calc(var(--wpcc-base-sizing) / 4);
 }
-.wpcc-pagination-filters {
+.wpcc-paginator-filters-list {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: calc(var(--wpcc-base-sizing));
+    gap: calc(var(--wpcc-base-sizing) / 4);
     flex-wrap: wrap;
 }
-.wpcc-pagination-filter {
+.wpcc-paginator-filters-item {
     background-color: var(--wpcc-primary-gray-light);
     padding: 0 calc(var(--wpcc-base-sizing) / 2);
     border-radius: var(--wpcc-border-radius);
@@ -368,29 +376,29 @@
     flex-grow: 1;
     box-sizing: border-box;
 }
-.wpcc-pagination-filter-text {
+.wpcc-paginator-filters-item-text {
     width: 100%;
 }
-.wpcc-pagination-filter-range {
+.wpcc-paginator-filters-item-range {
     width: 100%;
 }
-.wpcc-pagination-filter-order {
+.wpcc-paginator-filters-item-order {
     width: 100%;
 }
-.wpcc-pagination-filter label {
+.wpcc-paginator-filters-item label {
     white-space: nowrap;
 }
-.wpcc-pagination-filter-text input,
-.wpcc-pagination-filter select {
+.wpcc-paginator-filters-item-text input,
+.wpcc-paginator-filters-item select {
     margin-right: -4px;
 }
-.wpcc-pagination-filter-text input,
-.wpcc-pagination-filter-range input,
-.wpcc-pagination-filter select {
+.wpcc-paginator-filters-item-text input,
+.wpcc-paginator-filters-item-range input,
+.wpcc-paginator-filters-item select {
     width: 100%;
     max-height: 28px;
 }
-.wpcc-pagination-filter-range span {
+.wpcc-paginator-filters-item-range span {
     right: 0;
     display: flex;
     align-items: center;
@@ -405,14 +413,15 @@
 }
 
 @media (min-width: 768px) {
-    .wpcc-pagination-filter {
+    .wpcc-paginator-filters-item {
         width: calc(33% - var(--wpcc-base-sizing) / 2);
     }
-    .wpcc-pagination-filter-range {
+    .wpcc-paginator-filters-item-range {
         width: calc(50% - var(--wpcc-base-sizing) / 2);
         flex-shrink: 0;
     }
-    .wpcc-pagination-filters-container {
+
+    .wpcc-paginator-filters-container {
         flex-direction: row;
         flex-wrap: wrap;
     }
@@ -420,7 +429,11 @@
 
 /** Balance component **/
 
-.wpcc-balance {}
+.wpcc-balance {
+    max-width: 300px;
+    margin: auto;
+    box-shadow: var(--wpcc-bg-shadow);
+}
 .wpcc-balance-row {
     width: 100%;
     display: flex;
@@ -623,7 +636,7 @@
 
 /** Pools component */
 
-.wpcc-pagination-container {
+.wpcc-paginator-container {
     scroll-margin-top: 90px;
 }
 .wpcc-pools {
@@ -641,6 +654,24 @@
     display: flex;
     gap: var(--wpcc-base-sizing);
 }
+.wpcc-pool-mini {
+    padding: calc(var(--wpcc-base-sizing) / 2);
+    .wpcc-pool-header {
+        flex-wrap: nowrap;
+        padding-bottom: calc(var(--wpcc-base-sizing) / 2);
+    }
+    .wpcc-bar {
+        width: 50%;
+        margin-left: auto;
+        .wpcc-bar-content-overlay {
+            font-size: small;
+        }
+    }
+    .wpcc-stats {
+        align-items: center;
+        margin-left: auto;
+    }
+}
 .wpcc-pool-comparing {
     box-shadow: var(--wpcc-bg-shadow-light);
 }
@@ -652,7 +683,7 @@
     text-align: center;
     font-size: .6rem;
 }
-.wpcc-pool > .wpcc-loader {
+.wpcc-pool:not(.wpcc-pool-mini) > .wpcc-loader {
     margin: auto;
     min-height: 297px;
 }
@@ -705,7 +736,7 @@
 }
 .wpcc-pool-ticker {
     cursor: pointer;
-    font-weight: bolder;
+    font-weight: bold;
 }
 .wpcc-pool-name {
     display: flex;
@@ -723,7 +754,7 @@
     justify-content: flex-end;
 
 }
-.wpcc-pagination + .wpcc-pools {
+.wpcc-paginator-header+ .wpcc-pools {
     margin-top: var(--wpcc-base-sizing);
 }
 
@@ -785,7 +816,7 @@
 .wpcc-drep-comparing {
     box-shadow: var(--wpcc-bg-shadow-light);
 }
-.wpcc-pagination + .wpcc-dreps {
+.wpcc-paginator-header+ .wpcc-dreps {
     margin-top: var(--wpcc-base-sizing);
 }
 .wpcc-drep-id {

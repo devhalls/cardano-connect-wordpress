@@ -20,6 +20,7 @@ export const mockOption: AjaxResponse<Options> = {
         label_connected: 'Connected',
         label_disconnect: 'Disconnect',
         label_empty: 'No wallets detected. Please install a Wallet browser extension or switch browsers.',
+        label_connect_prompt: 'Connect your wallet!',
         label_disconnect_prompt: 'Are you sure you would like to disconnect?',
         label_disconnected_prompt: 'Successfully disconnected',
         label_error: 'Unable to sign authentication',

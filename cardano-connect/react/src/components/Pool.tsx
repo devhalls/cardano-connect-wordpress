@@ -265,10 +265,10 @@ export const Pool = ({
                             {loadingAction ? <Loader className={'wpcc-loader'}/> : (
                                 <>
                                     {user?.connected && delegateStake && !userDelegated ?
-                                        <button className={classMap.actionsButton} onClick={handleDelegate}
+                                        <button className={classMap.actionsButton + ' not-delegated'} onClick={handleDelegate}
                                                 type={'button'}>{options.label_delegate_to_pool}</button> : null}
                                     {user?.connected && userDelegated ? <span
-                                        className={classMap.actionsButtonPlaceholder}>{options.label_delegated_to_pool}</span> : null}
+                                        className={classMap.actionsButtonPlaceholder + ' delegated'}>{options.label_delegated_to_pool}</span> : null}
                                     <button
                                         data-tooltip-id={`pool-tooltip-${poolId}`}
                                         data-tooltip-content={!isComparing ? options.label_compare_add : options.label_compare_remove}

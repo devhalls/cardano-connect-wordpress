@@ -123,6 +123,7 @@ class Plugin extends Base {
 				'whitelist' => null,
 				'per_page'  => null,
 				'not_found' => null,
+				'view' => null,
 			), $attributes
 		);
 
@@ -211,7 +212,9 @@ class Plugin extends Base {
 			_e( 'Cron import option is disabled.', 'cardano-connect' );
 		} else if ( function_exists( 'wp_cron' ) ) {
 			wp_cron();
-			_e( 'Cron successfully triggered, refresh to view results.', 'cardano-connect' );
+			wp_unschedule_hook( 'cardano_connect_cron_fetch_data' );
+			wp_unschedule_hook( 'cardano_connect_cron_fetch_data_batch' );
+			_e( 'Cron successfully reset, refresh to view results.', 'cardano-connect' );
 		} else {
 			_e( 'wp_cron() not available', 'cardano-connect' );
 		}

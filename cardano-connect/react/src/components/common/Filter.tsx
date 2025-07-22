@@ -15,7 +15,7 @@ export const Filter = ({ filter, setFilter, prefix }: ComponentFilter) => {
     }, [prefix, filter])
 
     return (
-        <div className={`${classMap.paginationFilter} ${classMap.paginationFilter}-${filter.type} ${filter.className || ''}`}>
+        <div className={`${classMap.paginator.filters.item} ${classMap.paginator.filters.item}-${filter.type} ${filter.className || ''}`}>
             {filter.label ? <label htmlFor={filterId}>{filter.label}</label> : null}
             {filter.type ==='select' ? (
                 <div className={classMap.selectWrapper}>
