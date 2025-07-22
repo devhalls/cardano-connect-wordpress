@@ -59,6 +59,12 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
 							value={attributes.not_found}
 							onChange={(nextValue) => setAttributes({not_found: nextValue})}
 						/>
+						<CheckboxControl
+							label={__('Mini Stake view')}
+							help={__('(Select the template to render a smaller stake to my pool component)')}
+							checked={attributes.view}
+							onChange={(nextValue) => setAttributes({view: nextValue})}
+						/>
 					</>
 				) : (
 					<>

@@ -52,14 +52,8 @@ export const Pool = ({
     }
 
     const handleSetCompare = useCallback(() => {
-        const copiedItems = comparisons ? [...comparisons] : [];
-        if (isComparing) {
-            dispatch(setComparePools(copiedItems.filter(a => a && 'pool_id' in a && a.pool_id !== poolId)))
-        } else {
-            dispatch(setComparePools([...copiedItems, poolData]))
-
-        }
-    }, [dispatch, comparisons, isComparing, poolData, poolId])
+        dispatch(setComparePools(poolData))
+    }, [dispatch, poolData])
 
     // Helpers
 
@@ -271,10 +265,10 @@ export const Pool = ({
                             {loadingAction ? <Loader className={'wpcc-loader'}/> : (
                                 <>
                                     {user?.connected && delegateStake && !userDelegated ?
-                                        <button className={classMap.actionsButton} onClick={handleDelegate}
+                                        <button className={classMap.actionsButton + ' not-delegated'} onClick={handleDelegate}
                                                 type={'button'}>{options.label_delegate_to_pool}</button> : null}
                                     {user?.connected && userDelegated ? <span
-                                        className={classMap.actionsButtonPlaceholder}>{options.label_delegated_to_pool}</span> : null}
+                                        className={classMap.actionsButtonPlaceholder + ' delegated'}>{options.label_delegated_to_pool}</span> : null}
                                     <button
                                         data-tooltip-id={`pool-tooltip-${poolId}`}
                                         data-tooltip-content={!isComparing ? options.label_compare_add : options.label_compare_remove}
@@ -288,7 +282,7 @@ export const Pool = ({
                         </div>
                     </div>
                     <div className={classMap.poolDetail}>
-                        {poolData.synced_at ? `${options.label_pool_synced} ${new Date(poolData.synced_at * 1000)}` : ''}
+                        {poolData.synced_at ? `${options.label_pool_synced} ${new Date(parseInt(poolData.synced_at ?? '0') * 1000)}` : ''}
                     </div>
                 </div>
             }

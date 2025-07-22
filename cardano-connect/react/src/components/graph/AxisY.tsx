@@ -1,3 +1,4 @@
+import React from "react";
 import { useMemo } from "react";
 import { ScaleLinear } from "d3";
 
@@ -29,7 +30,6 @@ export const AxisY = ({
 
     return (
         <>
-
             {label ? (
                 <text
                     style={{

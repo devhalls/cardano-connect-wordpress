@@ -1,3 +1,4 @@
+import React from "react";
 import { useMemo } from "react";
 import { ScaleLinear } from "d3";
 
@@ -29,11 +30,6 @@ export const AxisX = ({
 
     return (
         <>
-            <path
-                d={["M", range[0], 0, "L", range[1], 0].join(" ")}
-                fill="none"
-                stroke="currentColor"
-            />
             {label ? (
                 <text
                     style={{

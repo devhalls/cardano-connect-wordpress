@@ -41,6 +41,9 @@ We use wp-env for the WordPress environment when working locally.
 ```
 # Start your wp-env environment.
 wp-env start
+
+# Cron jobs may not run in local instalations, and can be invoked manually:
+wp-env run cli wp cron event run --due-now
 ```
 
 ### WordPress blocks
@@ -98,7 +101,8 @@ npm run start
 
 ## Deployment
 
-Deployments are handled via the WordPress plugin repository. PRs acccepted in thie repository will be submitted to the WordPress repo by the contributor team.
+Deployments are handled via the WordPress plugin repository. PRs accepted in this repository will be submitted to 
+the WordPress repo by the contributor team.
 
 ```
 # Zip files ready for a WordPress instalation

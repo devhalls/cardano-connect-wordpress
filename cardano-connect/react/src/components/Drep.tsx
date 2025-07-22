@@ -42,14 +42,8 @@ export const Drep = ({
     }
 
     const handleSetCompare = useCallback(() => {
-        const copiedItems = comparisons ? [...comparisons] : [];
-        if (isComparing) {
-            dispatch(setCompareDreps(copiedItems.filter(a => a && 'drep_id' in a && a.drep_id !== drepId)))
-        } else {
-            dispatch(setCompareDreps([...copiedItems, drepData]))
-
-        }
-    }, [comparisons, isComparing, drepData])
+        dispatch(setCompareDreps(drepData))
+    }, [drepData])
 
     // Helpers
 

@@ -1,7 +1,7 @@
-import React from "react";
+import React, {useMemo} from "react";
 import {classMap} from "../../library/utils";
 
-export const Filter = ({ filter, setFilter }: ComponentFilter) => {
+export const Filter = ({ filter, setFilter, prefix }: ComponentFilter) => {
     const handleChange = (e) => {
         if (filter.type === "checkbox") {
             setFilter({...filter, value: e.target.checked});
@@ -10,21 +10,29 @@ export const Filter = ({ filter, setFilter }: ComponentFilter) => {
         }
     }
 
+    const filterId = useMemo(() => {
+        return prefix + filter?.key
+    }, [prefix, filter])
+
     return (
-        <div className={`${classMap.paginationFilter} ${classMap.paginationFilter}-${filter.type} ${filter.className || ''}`}>
-            {filter.label ? <label htmlFor={filter.key}>{filter.label}</label> : null}
+        <div className={`${classMap.paginator.filters.item} ${classMap.paginator.filters.item}-${filter.type} ${filter.className || ''}`}>
+            {filter.label ? <label htmlFor={filterId}>{filter.label}</label> : null}
             {filter.type ==='select' ? (
-                <select
-                    id={filter.key}
-                    onChange={handleChange}
-                >
-                    {filter.options.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                </select>
+                <div className={classMap.selectWrapper}>
+                    <select
+                        id={filterId}
+                        className={classMap.select}
+                        onChange={handleChange}
+                    >
+                        {filter.options?.map(option => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                    </select>
+                </div>
             ) : (
                 <input
-                    id={filter.key}
+                    id={filterId}
+                    className={filter.type === 'checkbox' ? classMap.checkbox : filter.type === 'range' ? classMap.range : classMap.input}
                     placeholder={filter.placeholder || undefined}
                     type={filter.type}
                     value={filter.value || ''}

@@ -1,9 +1,10 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Loader} from "./Loader";
-import {useAppSelector} from "../../library/state";
+import {useAppDispatch, useAppSelector} from "../../library/state";
 import {getOptionState} from "../../library/option";
 import {classMap} from "../../library/utils";
 import {Filter} from "./Filter";
+import {setComparePoolFilters} from "../../library/ux";
 
 export const Paginator = ({
     renderer,
@@ -16,11 +17,12 @@ export const Paginator = ({
 
     // APP state
 
+    const dispatch = useAppDispatch()
     const options: OptionState = useAppSelector(getOptionState)
 
     // Local state
 
-    const containerRef = useRef()
+    const containerRef= useRef<HTMLDivElement>(null)
     const [containerHeight, setContainerHeight] = useState<number>(null)
     const [loading, setLoading] = useState<boolean>(true);
     const [page, setPage] = useState<number>(1);
@@ -31,6 +33,11 @@ export const Paginator = ({
     const [updatedPage, setUpdatedPage] = useState<number>(1);
     const [updatedFilters, setUpdatedFilters] = useState<Filter[] | null>(filters)
     const [showFilters, setShowFilters] = useState<boolean>(true);
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
+    const totalPages = useMemo(
+        () => total > itemsPerPage ? Math.ceil(total / itemsPerPage) : 1,
+        [total, itemsPerPage]
+    )
 
     // Click handlers
 
@@ -54,6 +61,12 @@ export const Paginator = ({
             setUpdatedPage(calculatedPage)
             setLoading(false)
             setFilters(filtersSubmittable)
+            dispatch(setComparePoolFilters(filtersSubmittable.map(f => {
+                return {
+                    ...f,
+                    value: f.format ? f.format(f.value) : f.value
+                }
+            })))
             setContainerHeight(null)
             containerRef.current.scrollIntoView({
                 block: 'start',
@@ -72,6 +85,9 @@ export const Paginator = ({
                 type: f.type
             }
         })
+        if (submittableFilters) {
+            dispatch(setComparePoolFilters(submittableFilters))
+        }
         fetcher(page, itemsPerPage, submittableFilters).then(data => {
             setItems(data.items)
             setTotal(data.total)
@@ -80,70 +96,90 @@ export const Paginator = ({
     }, []);
 
     return (
-        <div className={classMap.paginationContainer} ref={containerRef} style={{height: containerHeight}}>
-            {perPage > 0 ? <div className={classMap.pagination}>
-                <div className={classMap.paginationPaged}>
-                    <div className={classMap.paginationPage}>
-                        <input
-                            onChange={(v) => setUpdatedPage(parseInt(v.currentTarget.value || '1'))}
-                            type={'number'}
-                            value={updatedPage}
-                            min={1}
-                            max={Math.ceil(total / itemsPerPage)}
-                        />{' '}
-                        <div>/ {total > itemsPerPage ? Math.ceil(total / itemsPerPage) : 1}</div>
+        <div className={classMap.paginator.container} ref={containerRef} style={{height: containerHeight}}>
+            {perPage > 0 ? (
+                <div className={classMap.paginator.header}>
+                    <div className={classMap.paginator.controls.container}>
+                        <div className={classMap.paginator.controls.number}>
+                            <input
+                                className={classMap.input}
+                                onChange={(v) => setUpdatedPage(parseInt(v.currentTarget.value || '1'))}
+                                type={'number'}
+                                value={updatedPage}
+                                min={1}
+                                max={totalPages}
+                            />{' '}<div><span>/</span> {totalPages}</div>
+                        </div>
+                        <button
+                            className={classMap.paginator.controls.prev}
+                            disabled={loading || page <= 1}
+                            onClick={() => changePage(page - 1, updatedFilters)}>
+                            {options.label_paginate_prev}
+                        </button>
+                        <button
+                            className={classMap.paginator.controls.next}
+                            disabled={loading || (items && page >= totalPages)}
+                            onClick={() => changePage(page + 1, updatedFilters)}>
+                            {options.label_paginate_next}
+                        </button>
+                        <span className={classMap.paginator.controls.total}>{total} {options.label_paginate_items}</span>
+                        {defaultFilters && options.pools_data_source === 'local_wp' ? <button
+                            className={showFilters ? classMap.paginator.controls.open : classMap.paginator.controls.close}
+                            onClick={() => setShowFilters(!showFilters)}
+                        ></button> : null}
+                        {/*<div className={classMap.btnGroup}>*/}
+                            {/*<button*/}
+                            {/*    className={`${classMap.paginator.controls.grid} ${viewMode === 'grid' ? 'wpcc-button-icon-active' : null}`}*/}
+                            {/*    onClick={() => setViewMode('grid')}*/}
+                            {/*></button>*/}
+                            {/*<button*/}
+                            {/*    className={`${classMap.paginator.controls.list} ${viewMode === 'list' ? 'wpcc-button-icon-active' : null}`}*/}
+                            {/*    onClick={() => setViewMode('list')}*/}
+                            {/*></button>*/}
+                            {/*{defaultFilters && options.pools_data_source === 'local_wp' ? <button*/}
+                            {/*    className={showFilters ? classMap.paginator.controls.open : classMap.paginator.controls.close}*/}
+                            {/*    onClick={() => setShowFilters(!showFilters)}*/}
+                            {/*></button> : null}*/}
+                        {/*</div>*/}
                     </div>
-                    <button
-                        className={classMap.paginationPrev}
-                        disabled={loading || page <= 1}
-                        onClick={() => changePage(page - 1, updatedFilters)}>
-                        {options.label_paginate_prev}
-                    </button>
-                    <button
-                        className={classMap.paginationNext}
-                        disabled={loading || (items && page >= Math.ceil(total / itemsPerPage))}
-                        onClick={() => changePage(page + 1, updatedFilters)}>
-                        {options.label_paginate_next}
-                    </button>
-                    <span className={classMap.paginationTotal}>{total} {options.label_paginate_items}</span>
-                    {defaultFilters && options.pools_data_source === 'local_wp' ? <button
-                        className={classMap.paginationToggle}
-                        onClick={() => setShowFilters(!showFilters)}
-                    ><span className={showFilters ? classMap.paginationToggleIcon : classMap.paginationToggleIconClose}></span></button>: null}
+                    {defaultFilters && showFilters ? (
+                        <div className={classMap.paginator.filters.container}>
+                            {options.pools_data_source === 'local_wp' ? (
+                                <div className={classMap.paginator.filters.list}>
+                                    {filters?.sort((a, b) => a.order < b.order ? -1 : 1).map((f) =>
+                                        <Filter
+                                            key={f.key}
+                                            filter={updatedFilters?.find(g => g.key === f.key) || f}
+                                            setFilter={(f) => {
+                                                const updated = updatedFilters.filter(g => g.key !== f.key)
+                                                setUpdatedFilters([...updated, f])
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            ) : null}
+                            <div className={classMap.paginator.filters.buttons}>
+                                {!loading && (updatedPage !== page || JSON.stringify(updatedFilters) !== JSON.stringify(filters)) ? <button
+                                    className={classMap.paginator.filters.update}
+                                    disabled={loading}
+                                    onClick={() => changePage(updatedPage, updatedFilters)}>
+                                    {options.label_paginate_search_update}
+                                </button> : null}
+                                {!loading && (1 !== page || JSON.stringify(defaultFilters) !== JSON.stringify(filters)) ? <button
+                                    className={classMap.paginator.filters.reset}
+                                    disabled={loading}
+                                    onClick={() => {
+                                        setUpdatedFilters(defaultFilters)
+                                        changePage(1, defaultFilters)
+                                    }}>
+                                    {options.label_paginate_search_reset}
+                                </button> : null}
+                            </div>
+                        </div>
+                    ): null}
                 </div>
-                {defaultFilters && showFilters ? <div className={classMap.paginationFiltersContainer}>
-                    {options.pools_data_source === 'local_wp' ? <div className={classMap.paginationFilters}>
-                        {filters?.sort((a, b) => a.order < b.order ? -1 : 1).map((f) =>
-                            <Filter
-                                key={f.key}
-                                filter={updatedFilters?.find(g => g.key === f.key) || f}
-                                setFilter={(f) => {
-                                    const updated = updatedFilters.filter(g => g.key !== f.key)
-                                    setUpdatedFilters([...updated, f])
-                                }}
-                            />
-                        )}
-                    </div> : null}
-                    <div className={classMap.paginationFiltersButtons}>
-                        {!loading && (updatedPage !== page || JSON.stringify(updatedFilters) !== JSON.stringify(filters)) ? <button
-                            className={classMap.paginationUpdate}
-                            disabled={loading}
-                            onClick={() => changePage(updatedPage, updatedFilters)}>
-                            {options.label_paginate_search_update}
-                        </button> : null}
-                        {!loading && (1 !== page || JSON.stringify(defaultFilters) !== JSON.stringify(filters)) ? <button
-                            className={classMap.paginationReset}
-                            disabled={loading}
-                            onClick={() => {
-                                setUpdatedFilters(defaultFilters)
-                                changePage(1, defaultFilters)
-                            }}>
-                            {options.label_paginate_search_reset}
-                        </button> : null}
-                    </div>
-                </div> : null}
-            </div> : null}
-            <div className={className}>
+            ) : null}
+            <div className={`${classMap.paginator.body} ${className}`}>
                 {loading
                     ? <Loader/>
                     : items?.length

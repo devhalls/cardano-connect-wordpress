@@ -3,26 +3,30 @@
  */
 (function($){
 
-    const sync_pools_trigger = '#sync-pools';
-    const sync_pool_loader = 'Syncing pools, please wait ...';
+    const trigger_cron_trigger = '#wpcc-trigger-cron';
+    const message_element = document.getElementById('wpcc-trigger-message');
+    const sync_pool_loader = 'Loading...';
 
-    $(document).on('click', sync_pools_trigger, function(e)
+    $(document).on('click', trigger_cron_trigger, function(e)
     {
         e.preventDefault();
-        sync_pools(e.target);
+        trigger_cron(e.target);
     });
 
-    function sync_pools(target) {
+    function trigger_cron(target) {
         const html = target.innerHTML;
         if (html === sync_pool_loader) {
             return;
         }
+        message_element.innerHTML = ''
+        message_element.className = ''
         target.innerHTML = sync_pool_loader
         $.post('/wp-admin/admin-ajax.php', {
-            'action': 'sync_pools'
+            'action': 'cardano_connect_cron'
         }, data => {
-            console.log(data);
             target.innerHTML = html
+            message_element.innerHTML = data
+            message_element.className = `wpcc-section wpcc-section-small wpcc-section-${data.includes('success') ? 'success' : 'error'}`
         });
     }
 

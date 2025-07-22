@@ -14,5 +14,6 @@ class ResponsePools {
 		public int|null $total = null,
 		/** @var string|null */
 		public string|null $message = null,
-	) {}
+	) {
+	}
 }

@@ -4,6 +4,7 @@
  * @var $whitelist string|null Comma seperated string of whitelisted pool IDs.
  * @var $per_page number|null Number of items per page | 0 = disable pagination.
  * @var $not_found string Replaces options text for not found cases.
+ * @var $view boolean If true renders the mini stake to pool view.
  */
 ?>
 <div class="wp-block-cardano-connect-pools"
@@ -15,5 +16,8 @@
 	<?php endif ?>
 	<?php if ($not_found) : ?>
         data-not_found="<?php echo esc_attr( $not_found ) ?>"
+	<?php endif ?>
+	<?php if ($view) : ?>
+        data-view="<?php echo esc_attr( $view ) ?>"
 	<?php endif ?>
 ></div>

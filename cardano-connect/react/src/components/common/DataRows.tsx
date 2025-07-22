@@ -1,8 +1,5 @@
 import React from 'react'
 import {classMap} from "../../library/utils";
-import {setMessage} from "../../library/message";
-import {useAppDispatch, useAppSelector} from "../../library/state";
-import {getOptionState} from "../../library/option";
 import {Copy} from "./Copy";
 
 export const DataRows = ({
@@ -10,15 +7,15 @@ export const DataRows = ({
     className
 }: ComponentDataRows) => {
 
-    const printTitleRow = (title: string | React.ReactElement): React.ReactElement => {
+    const printTitleRow = (title: string | number): React.ReactElement => {
         return (
             <li className={classMap.assetTitleRow}>{title}</li>
         )
     }
 
-    const printDataRow = (title: string | React.ReactElement, data: string | number | React.ReactElement, copy?: boolean): React.ReactElement => {
+    const printDataRow = (title: string | number, data: string | number, copy?: boolean): React.ReactElement => {
         return (
-            <li className={classMap.assetDataRow}>
+            <li key={title.toString() + data.toString()} className={classMap.assetDataRow}>
                 <span>{title}</span>{' '}
                 {copy ? (
                     <span><Copy text={data.toString()}/></span>
@@ -30,9 +27,9 @@ export const DataRows = ({
     }
 
   return (
-    <ul className={className}>
+    <ul className={`${classMap.assetData} ${className}`}>
         {rows.map((row, i) => {
-            <>{row.data ? printDataRow(row.title, row.data, false) : printTitleRow(row.title)}</>
+            return row.data ? printDataRow(row.title, row.data, row.copy) : printTitleRow(row.title)
         })}
     </ul>
   )

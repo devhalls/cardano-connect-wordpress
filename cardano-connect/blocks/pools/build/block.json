@@ -30,6 +30,9 @@
     },
     "not_found": {
       "type": "string"
+    },
+    "view": {
+      "type": "boolean"
     }
   }
 }
