@@ -54,8 +54,6 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
 	 */
 	const gateOptions = [
 		{label: __('No condition, always show content'), value: 'none'},
-		{label: __('Delegated to any pool in the list'), value: 'any'},
-		{label: __('Delegated to all pools in the list'), value: 'all'},
 	]
 
 	/**

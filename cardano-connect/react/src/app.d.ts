@@ -329,14 +329,14 @@ declare interface ComponentAssets {
     perPage?: number
     hideTitles?: boolean
     notFound?: string
-    whitelistString?: string
+    whitelist?: string
 }
 declare interface ComponentAsset {
     asset: ApiAsset
     showTitle?: boolean
 }
 declare interface ComponentPools {
-    whitelistString?: string,
+    whitelist?: string,
     perPage?: number
     notFound?: string
     view?: 'mini' | 'list' | 'grid'
@@ -352,7 +352,7 @@ declare interface ComponentPool {
     pool?: PoolData
 }
 declare interface ComponentDreps {
-    whitelistString?: string,
+    whitelist?: string,
     perPage?: number
     notFound?: string
     dreps?: Drep[]
@@ -364,6 +364,10 @@ declare interface ComponentDrep {
     key?: string
 }
 declare interface ComponentBalance {
+    gated?: string
+    gatedPlaceholder?: string
+    gate?: string
+    gateHideComponent?: boolean
     className?: string
 }
 declare interface ComponentBar {

@@ -16,21 +16,93 @@ import 'react-tooltip/dist/react-tooltip.css'
 import {CompareModal} from "./components/CompareModal";
 import {Dreps} from "./components/Dreps";
 
+/**
+ * Convert snake case to camel case.
+ * @param str
+ */
+function toCamelCase(str: string) {
+    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+/**
+ * Extracts an elements data set and phrase it ready to pass to React components.
+ * @param dataset
+ */
+function extractDataSet(dataset: { [s: string]: unknown; } | ArrayLike<unknown>) {
+    const dataAttrs = {};
+    for (const [key, value] of Object.entries(dataset)) {
+        if (value === "" || value === null) {
+            dataAttrs[toCamelCase(key)] = undefined;
+        } else if (!isNaN(value) && value.trim() !== "") {
+            // Convert numeric values automatically
+            dataAttrs[toCamelCase(key)] = Number(value);
+        } else {
+            dataAttrs[toCamelCase(key)] = value;
+        }
+    }
+    return dataAttrs;
+}
+
+/**
+ * Construct the wallet connector elements.
+ */
 const connectorElements = document.getElementsByClassName('wp-block-cardano-connect-connector')
 for (let i = 0; i < connectorElements.length; i++) {
     const connector = ReactDOM.createRoot(connectorElements[i]);
+    const element = connectorElements[i] as HTMLElement
     connector.render(
         <React.StrictMode>
             <MeshProvider>
                 <Provider store={state}>
                     <PersistGate persistor={persistor}>
-                        <Connector />
+                        <Connector {...extractDataSet(element.dataset)} />
                     </PersistGate>
                 </Provider>
             </MeshProvider>
         </React.StrictMode>
     );
 }
+
+/**
+ * Construct the balance (aka wallet) elements.
+ */
+const balanceElements = document.getElementsByClassName('wp-block-cardano-connect-balance')
+for (let i = 0; i < balanceElements.length; i++) {
+    const balance = ReactDOM.createRoot(balanceElements[i]);
+    const element = balanceElements[i] as HTMLElement
+    balance.render(
+        <React.StrictMode>
+            <MeshProvider>
+                <Provider store={state}>
+                    <PersistGate persistor={persistor}>
+                        <Balance {...extractDataSet(element.dataset)} />
+                    </PersistGate>
+                </Provider>
+            </MeshProvider>
+        </React.StrictMode>
+    );
+}
+
+/**
+ * Construct the pool list elements.
+ */
+const poolElements = document.getElementsByClassName('wp-block-cardano-connect-pools')
+for (let i = 0; i < poolElements.length; i++) {
+    const pool = ReactDOM.createRoot(poolElements[i]);
+    const element = poolElements[i] as HTMLElement
+    pool.render(
+        <React.StrictMode>
+            <MeshProvider>
+                <Provider store={state}>
+                    <PersistGate persistor={persistor}>
+                        <Pools {...extractDataSet(element.dataset)} />
+                    </PersistGate>
+                </Provider>
+            </MeshProvider>
+        </React.StrictMode>
+    );
+}
+
 
 const assetsElements = document.getElementsByClassName('wp-block-cardano-connect-assets')
 for (let i = 0; i < assetsElements.length; i++) {
@@ -53,7 +125,7 @@ for (let i = 0; i < assetsElements.length; i++) {
                             perPage={perPage}
                             hideTitles={hideTitles}
                             notFound={notFound}
-                            whitelistString={assetsElements[i].getAttribute('data-whitelist')}
+                            whitelist={assetsElements[i].getAttribute('data-whitelist')}
                         />
                     </PersistGate>
                 </Provider>
@@ -62,70 +134,6 @@ for (let i = 0; i < assetsElements.length; i++) {
     );
 }
 
-const balanceElements = document.getElementsByClassName('wp-block-cardano-connect-balance')
-for (let i = 0; i < balanceElements.length; i++) {
-    const assets = ReactDOM.createRoot(balanceElements[i]);
-    assets.render(
-        <React.StrictMode>
-            <MeshProvider>
-                <Provider store={state}>
-                    <PersistGate persistor={persistor}>
-                        <Balance />
-                    </PersistGate>
-                </Provider>
-            </MeshProvider>
-        </React.StrictMode>
-    );
-}
-
-const poolsElements = document.getElementsByClassName('wp-block-cardano-connect-pools')
-for (let i = 0; i < poolsElements.length; i++) {
-    const pools = ReactDOM.createRoot(poolsElements[i]);
-    const whitelist: string = poolsElements[i].getAttribute('data-whitelist')
-        ? poolsElements[i].getAttribute('data-whitelist')
-        : undefined
-    const perPage: number = poolsElements[i].getAttribute('data-per_page')
-        ? parseInt(poolsElements[i].getAttribute('data-per_page'))
-        : undefined
-    const notFound: string = poolsElements[i].getAttribute('data-not_found')
-        ? poolsElements[i].getAttribute('data-not_found')
-        : undefined
-    const view: "grid" | "mini" | "list" = poolsElements[i].getAttribute('data-view')
-        ? poolsElements[i].getAttribute('data-view') as "grid" | "mini" | "list"
-        : 'grid'
-    const gated: string = poolsElements[i].getAttribute('data-gated')
-        ? poolsElements[i].getAttribute('data-gated')
-        : undefined
-    const gatedPlaceholder: string = poolsElements[i].getAttribute('data-gated_placeholder')
-        ? poolsElements[i].getAttribute('data-gated_placeholder')
-        : undefined
-    const gate: string = poolsElements[i].getAttribute('data-gate')
-        ? poolsElements[i].getAttribute('data-gate')
-        : undefined
-    const gateHideComponent: string = poolsElements[i].getAttribute('data-gate_hide_component')
-        ? poolsElements[i].getAttribute('data-gate_hide_component')
-        : undefined
-    pools.render(
-        <React.StrictMode>
-            <MeshProvider>
-                <Provider store={state}>
-                    <PersistGate persistor={persistor}>
-                        <Pools
-                            perPage={perPage}
-                            notFound={notFound}
-                            view={view}
-                            whitelistString={whitelist}
-                            gated={gated}
-                            gatedPlaceholder={gatedPlaceholder}
-                            gate={gate}
-                            gateHideComponent={!!gateHideComponent}
-                        />
-                    </PersistGate>
-                </Provider>
-            </MeshProvider>
-        </React.StrictMode>
-    );
-}
 
 const drepsElements = document.getElementsByClassName('wp-block-cardano-connect-dreps')
 for (let i = 0; i < drepsElements.length; i++) {
@@ -144,7 +152,7 @@ for (let i = 0; i < drepsElements.length; i++) {
                         <Dreps
                             perPage={perPage}
                             notFound={notFound}
-                            whitelistString={drepsElements[i].getAttribute('data-whitelist')}
+                            whitelist={drepsElements[i].getAttribute('data-whitelist')}
                         />
                     </PersistGate>
                 </Provider>
@@ -153,11 +161,14 @@ for (let i = 0; i < drepsElements.length; i++) {
     );
 }
 
+/**
+ * Create the global element a append it the dom automatically.
+ */
 const globalElement = document.createElement('div')
 globalElement.id = 'wp-block-cardano-connect-global'
 document.body.appendChild(globalElement)
-const message = ReactDOM.createRoot(globalElement);
-message.render(
+const global = ReactDOM.createRoot(globalElement);
+global.render(
     <React.StrictMode>
         <MeshProvider>
             <Provider store={state}>

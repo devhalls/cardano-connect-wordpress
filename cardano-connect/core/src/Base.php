@@ -258,14 +258,6 @@ abstract class Base {
 						'label' => __( 'No condition, always show content', 'cardano-connect' ),
 						'value' => 'none'
 					],
-					[
-						'label' => __( 'Delegated to any pool in the list', 'cardano-connect' ),
-						'value' => 'any'
-					],
-					[
-						'label' => __( 'Delegated to all pools in the list', 'cardano-connect' ),
-						'value' => 'all'
-					],
 				]
 			]
 		);

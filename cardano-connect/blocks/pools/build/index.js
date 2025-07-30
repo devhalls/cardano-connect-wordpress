@@ -96,12 +96,6 @@ function Edit({
   const gateOptions = [{
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('No condition, always show content'),
     value: 'none'
-  }, {
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delegated to any pool in the list'),
-    value: 'any'
-  }, {
-    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Delegated to all pools in the list'),
-    value: 'all'
   }];
 
   /**

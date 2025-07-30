@@ -5,8 +5,15 @@ import {useWalletList} from "@meshsdk/react";
 import {classMap, formatBalance, trimAddress, ucFirst} from "../library/utils";
 import {Copy} from "./common/Copy";
 import {Loader} from "./common/Loader";
+import {Gated} from "./common/Gated";
 
-export const Balance = ({className}: ComponentBalance) => {
+export const Balance = ({
+    gated,
+    gatedPlaceholder,
+    gate,
+    gateHideComponent,
+    className
+}: ComponentBalance) => {
 
     // APP State
 
@@ -33,51 +40,63 @@ export const Balance = ({className}: ComponentBalance) => {
         setLoading(!balances?.length)
     }, [user.connected, balances]);
 
-    return user.connected ? (
+    return (
         <div className={`${classMap.balanceContainer} ${className}`}>
-            {loading ? (
-                <Loader />
-            ) : (
+            {!gated || (gated && !gateHideComponent) ? (
                 <>
-                    <div className={classMap.balanceRow}>
-                        <div className={classMap.balanceCol}>Address:</div>
-                        <div className={classMap.balanceCol}>
-                            <Copy text={trimAddress(address)} copyText={address} />
-                        </div>
-                    </div>
-                    <div className={classMap.balanceRow}>
-                        <div className={classMap.balanceCol}>Stake Address:</div>
-                        <div className={classMap.balanceCol}>
-                            <Copy text={trimAddress(stakeAddress)} copyText={stakeAddress} />
-                        </div>
-                    </div>
-                    <div className={classMap.balanceRow}>
-                        <div className={classMap.balanceCol}>Connect with:</div>
-                        <div className={classMap.row}>
-                            <img width={18} height={18} src={wallet.icon} alt={wallet.name}/>
-                            {ucFirst(user.web3.cardano_connect_wallet)}
-                        </div>
-                    </div>
-                    {collateral?.length ? (
-                        <div className={classMap.balanceRow}>
-                            <div className={classMap.balanceCol}>Wallet collateral:</div>
-                            <div className={classMap.balanceCol}>
-                                {collateral?.map((col: UxTO) => {
-                                    return col.output?.amount?.map((out) => (
-                                        <div key={out.unit + out.quantity}>₳ {formatBalance(out.quantity)}</div>
-                                    ))
-                                })}
-                            </div>
-                        </div>
-                    ) : null}
-                    <div className={classMap.balanceTotalRow}>
-                        <div className={classMap.balanceCol}>Balance:</div>
-                        {filteredBalance?.map((balance: Balance) => (
-                            <div key={balance.unit + balance.quantity} className={classMap.balanceCol}>₳ {formatBalance(balance.quantity)}</div>
-                        ))}
-                    </div>
+                    {loading ? (
+                        <Loader />
+                    ) : (
+                        <>
+                            {user.connected ? (
+                                <>
+                                    <div className={classMap.balanceRow}>
+                                        <div className={classMap.balanceCol}>Address:</div>
+                                        <div className={classMap.balanceCol}>
+                                            <Copy text={trimAddress(address)} copyText={address} />
+                                        </div>
+                                    </div>
+                                    <div className={classMap.balanceRow}>
+                                        <div className={classMap.balanceCol}>Stake Address:</div>
+                                        <div className={classMap.balanceCol}>
+                                            <Copy text={trimAddress(stakeAddress)} copyText={stakeAddress} />
+                                        </div>
+                                    </div>
+                                    <div className={classMap.balanceRow}>
+                                        <div className={classMap.balanceCol}>Connect with:</div>
+                                        <div className={classMap.row}>
+                                            <img width={18} height={18} src={wallet.icon} alt={wallet.name}/>
+                                            {ucFirst(user.web3.cardano_connect_wallet)}
+                                        </div>
+                                    </div>
+                                </>
+                            ) : null }
+                            {collateral?.length ? (
+                                <div className={classMap.balanceRow}>
+                                    <div className={classMap.balanceCol}>Wallet collateral:</div>
+                                    <div className={classMap.balanceCol}>
+                                        {collateral?.map((col: UxTO) => {
+                                            return col.output?.amount?.map((out) => (
+                                                <div key={out.unit + out.quantity}>₳ {formatBalance(out.quantity)}</div>
+                                            ))
+                                        })}
+                                    </div>
+                                </div>
+                            ) : null }
+                            {filteredBalance ? (
+                                <div className={classMap.balanceTotalRow}>
+                                    <div className={classMap.balanceCol}>Balance:</div>
+                                    {filteredBalance?.map((balance: Balance) => (
+                                        <div key={balance.unit + balance.quantity}
+                                             className={classMap.balanceCol}>₳ {formatBalance(balance.quantity)}</div>
+                                    ))}
+                                </div>
+                            ) : null }
+                        </>
+                    )}
                 </>
-            )}
+            ) : null }
+            {gated ? <Gated gated={gated} gatedPlaceholder={gatedPlaceholder} gate={gate}/> : null}
         </div>
-    ) : null
+    )
 }

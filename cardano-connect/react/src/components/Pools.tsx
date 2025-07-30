@@ -12,7 +12,7 @@ import {getOptionState} from "../library/option";
 import {Gated} from "./common/Gated";
 
 export const Pools = ({
-    whitelistString = null,
+    whitelist = null,
     perPage = 10, // Set to 0 to disable pagination
     notFound,
     view,
@@ -32,8 +32,8 @@ export const Pools = ({
     // Function to fetch the list of pools.
 
     const getPools = async (page: number, perPage: number, filters?: Filter[]|null) => {
-        if (whitelistString) {
-            const poolIds = whitelistString?.length ? whitelistString.split('\n').map(a => a.trim()) : []
+        if (whitelist) {
+            const poolIds = whitelist?.length ? whitelist.split('\n').map(a => a.trim()) : []
             const formatted: Pool[] = poolIds.map(p => {
                 return {pool_id: p}
             })

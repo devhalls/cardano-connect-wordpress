@@ -234,7 +234,7 @@ class Api extends Base {
 			return $this->returnResponse( true, [
 				'html'   => $html,
 				'title'  => $pattern->post_title,
-				'passed' => false
+				'passed' => true
 			] );
 		}
 

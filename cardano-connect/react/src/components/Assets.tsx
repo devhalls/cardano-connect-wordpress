@@ -11,7 +11,7 @@ export const Assets = ({
     perPage = 10, // if set to 0, pagination will be disabled
     hideTitles = null,
     notFound = null,
-    whitelistString = null,
+    whitelist = null,
 }: ComponentAssets) => {
 
     // APP State
@@ -35,7 +35,7 @@ export const Assets = ({
 
     const filterAssets = useCallback(() => {
         const list: Asset[] = []
-        const acceptedLocal = whitelistString?.length ? whitelistString.split('\n').map(a => a.trim()) : []
+        const acceptedLocal = whitelist?.length ? whitelist.split('\n').map(a => a.trim()) : []
         const acceptedGlobal = options.assets_whitelist?.length ? options.assets_whitelist.split(' ').map(a => a.trim()) : []
         const accepted = acceptedLocal.length || acceptedGlobal.length ? [...acceptedLocal, ...acceptedGlobal] : null;
         for (let i = 0; i < assets.length; i++) {
@@ -54,7 +54,7 @@ export const Assets = ({
         setFilteredAssets(list)
         setTotal(list.length)
         filterPage(1, itemsPerPage).then()
-    }, [assets, options, whitelistString])
+    }, [assets, options, whitelist])
 
     const filterPage = useCallback(async (page: number, limit: number) => {
         if (!filteredAssets) {

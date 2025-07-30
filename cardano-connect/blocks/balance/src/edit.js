@@ -23,6 +23,7 @@ import './editor.scss';
 import './../../shared/editor.scss';
 import Title from "../../shared/components/Title";
 import {CheckboxControl} from "@wordpress/components";
+import GatedControl from "../../shared/components/form/GatedControl";
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -33,6 +34,14 @@ import {CheckboxControl} from "@wordpress/components";
  * @return {Element} Element to render.
  */
 export default function Edit({ attributes, setAttributes, isSelected }) {
+
+	/**
+	 * Create an array of gated logic options.
+	 */
+	const gateOptions = [
+		{label: __('No condition, always show content'), value: 'none'},
+	]
+
 	return (
 		<div {...useBlockProps()}>
 			<div className={`wpcc-block-control ${isSelected ? 'wpcc-block-control-edit' : ''}`}>
@@ -68,6 +77,14 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
 							label={__('Show wallet balance?')}
 							checked={attributes.show_balance}
 							onChange={(value) => setAttributes({show_balance: value})}
+						/>
+						<GatedControl
+							gated={attributes.gated}
+							gate_hide_component={attributes.gate_hide_component}
+							gated_placeholder={attributes.gated_placeholder}
+							gate={attributes.gate}
+							gateOptions={gateOptions}
+							setAttributes={setAttributes}
 						/>
 					</>
 				) : (
