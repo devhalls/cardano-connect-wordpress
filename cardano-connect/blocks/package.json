@@ -27,8 +27,11 @@
 		"@wordpress/scripts": "^28.3.0"
 	},
 	"dependencies": {
+		"@wordpress/api-fetch": "^7.27.0",
 		"@wordpress/blocks": "^13.5.0",
 		"@wordpress/components": "^28.5.0",
+		"@wordpress/data": "^10.27.0",
+		"@wordpress/element": "^6.27.0",
 		"@wordpress/i18n": "^5.5.0"
 	}
 }

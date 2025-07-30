@@ -238,6 +238,7 @@ export const classMap = {
         container: 'wpcc-paginator-container',
         header: 'wpcc-paginator-header',
         body: 'wpcc-paginator-body',
+        table: 'wpcc-paginator-table',
         controls: {
             container: 'wpcc-paginator-controls-container',
             number: 'wpcc-paginator-controls-page',
@@ -313,12 +314,15 @@ export const classMap = {
     pool: 'wpcc-pool wpcc-card-dark',
     poolMini: 'wpcc-pool wpcc-pool-mini wpcc-card-dark',
     poolComparing: 'wpcc-pool-comparing',
+    poolError: 'wpcc-pool-error',
+    poolImageWrapper: 'wpcc-pool-image-wrapper',
     poolImage: 'wpcc-pool-image',
     poolContent: 'wpcc-pool-content',
     poolHeader: 'wpcc-pool-header',
     poolDescription: 'wpcc-pool-description',
     poolDescriptionIcon: 'wpcc-icon wpcc-icon-eye',
     poolHeaderRight: 'wpcc-pool-header-right',
+    poolHeaderLeft: 'wpcc-pool-header-left',
     poolBody: 'wpcc-pool-body',
     poolBodyBars: 'wpcc-pool-body-bars',
     poolTicker: 'wpcc-pool-ticker',
@@ -362,4 +366,16 @@ export const classMap = {
     plotClose: 'wpcc-plot-close wpcc-icon wpcc-icon-close',
     plotAdd: 'wpcc-plot-add wpcc-icon wpcc-icon-add',
     plotTitle: 'wpcc-plot-title',
+    // Tables
+    table: {
+        wrapper: 'wpcc-table-wrap',
+        tr: 'wpcc-tr',
+        th: 'wpcc-th',
+        tdImage: 'wpcc-td wpcc-td-image',
+        tdText: 'wpcc-td wpcc-td-text',
+        tdAction: 'wpcc-td wpcc-td-text'
+    },
+    // Gated wrappers
+    gated: 'wpcc-gated',
+    gatedContent: 'wpcc-card-dark'
 }

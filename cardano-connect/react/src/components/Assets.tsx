@@ -8,7 +8,7 @@ import {Loader} from "./common/Loader";
 import {backendGetAsset} from "../library";
 
 export const Assets = ({
-    perPage = 10, // if set to 0 pagination will be disabled
+    perPage = 10, // if set to 0, pagination will be disabled
     hideTitles = null,
     notFound = null,
     whitelistString = null,
@@ -101,7 +101,7 @@ export const Assets = ({
     return user.connected ? (
         <div className={classMap.assetsContainer}>
             {perPage > 0 && (
-                <div className={classMap.pagination}>
+                <div className={classMap.paginator.container}>
                     <span>{currentPage} / {filteredAssets?.length > itemsPerPage ? Math.ceil(filteredAssets?.length / itemsPerPage) : 1}</span>
                     <button disabled={loading || currentPage <= 1}
                             onClick={() => filterPage(currentPage - 1, itemsPerPage)}>

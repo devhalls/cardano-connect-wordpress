@@ -6,6 +6,7 @@ use DateTime;
 use WP_Error;
 use WPCC\Base;
 use WPCC\Connect\Base as ConnectBase;
+use WPCC\Connect\DTO\MithrilSigner;
 use WPCC\Connect\DTO\Pool;
 use WPCC\Connect\DTO\PoolId;
 use WPCC\Connect\Interfaces\PostType;
@@ -87,6 +88,13 @@ class StakePool implements PostType {
 				$pools = $provider->getStakePools( $page, $per_page );
 			}
 
+			$signers = $provider->getMithrilSigners();
+			if ( $signers->success ) {
+				$signers = $signers->response;
+			} else {
+				$signers = [];
+			}
+
 			$count = $pools->success ? count( $pools->response ) : 0;
 			if ( ! $pools->success ) {
 				$error = new WP_Error( 500, $pools->message );
@@ -100,6 +108,13 @@ class StakePool implements PostType {
 					$pool                  = $data->response;
 					$pool_arr              = $pool ? $pool->toArray() : [];
 					$pool_arr['synced_at'] = ( new DateTime() )->getTimestamp();
+
+					// Add mithril signer if present in the signer response for the current epoch.
+					$pool_arr['mithril_signer'] = (bool) array_filter(
+						$signers['registrations'], static function ( $signer ) use ( $pool_arr ) {
+							return $signer['party_id'] === $pool_arr['pool_id'];
+						}
+					);
 
 					if ( $post ) {
 						$post     = wp_update_post( [ 'ID' => $post->ID, 'meta_input' => $pool_arr ] );

@@ -15,6 +15,7 @@ export const CircularBar = ({
     let maxY = 0;
     data.map(a => {
         maxY = a.y > maxY ? a.y : maxY
+        return a
     })
     maxY = axisMax ? axisMax(maxY) : maxY
 

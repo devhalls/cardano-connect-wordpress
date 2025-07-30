@@ -12,7 +12,8 @@ export const Paginator = ({
     perPage = 10, // Set to 0 to disable pagination
     className,
     notFound,
-    defaultFilters
+    defaultFilters,
+    defaultView = 'grid'
 }: ComponentPaginator<ApiAsset | Asset | Pool | Drep>) => {
 
     // APP state
@@ -33,7 +34,7 @@ export const Paginator = ({
     const [updatedPage, setUpdatedPage] = useState<number>(1);
     const [updatedFilters, setUpdatedFilters] = useState<Filter[] | null>(filters)
     const [showFilters, setShowFilters] = useState<boolean>(true);
-    const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>(defaultView)
     const totalPages = useMemo(
         () => total > itemsPerPage ? Math.ceil(total / itemsPerPage) : 1,
         [total, itemsPerPage]
@@ -73,7 +74,7 @@ export const Paginator = ({
                 behavior: 'smooth'
             })
         })
-    }, [itemsPerPage, filters])
+    }, [itemsPerPage, filters, dispatch, fetcher])
 
     // Set data on load
 
@@ -123,24 +124,20 @@ export const Paginator = ({
                             {options.label_paginate_next}
                         </button>
                         <span className={classMap.paginator.controls.total}>{total} {options.label_paginate_items}</span>
-                        {defaultFilters && options.pools_data_source === 'local_wp' ? <button
-                            className={showFilters ? classMap.paginator.controls.open : classMap.paginator.controls.close}
-                            onClick={() => setShowFilters(!showFilters)}
-                        ></button> : null}
-                        {/*<div className={classMap.btnGroup}>*/}
-                            {/*<button*/}
-                            {/*    className={`${classMap.paginator.controls.grid} ${viewMode === 'grid' ? 'wpcc-button-icon-active' : null}`}*/}
-                            {/*    onClick={() => setViewMode('grid')}*/}
-                            {/*></button>*/}
-                            {/*<button*/}
-                            {/*    className={`${classMap.paginator.controls.list} ${viewMode === 'list' ? 'wpcc-button-icon-active' : null}`}*/}
-                            {/*    onClick={() => setViewMode('list')}*/}
-                            {/*></button>*/}
-                            {/*{defaultFilters && options.pools_data_source === 'local_wp' ? <button*/}
-                            {/*    className={showFilters ? classMap.paginator.controls.open : classMap.paginator.controls.close}*/}
-                            {/*    onClick={() => setShowFilters(!showFilters)}*/}
-                            {/*></button> : null}*/}
-                        {/*</div>*/}
+                        <div className={classMap.btnGroup}>
+                            <button
+                                className={`${classMap.paginator.controls.grid} ${viewMode === 'grid' ? 'wpcc-button-icon-active' : null}`}
+                                onClick={() => setViewMode('grid')}
+                            ></button>
+                            <button
+                                className={`${classMap.paginator.controls.list} ${viewMode === 'list' ? 'wpcc-button-icon-active' : null}`}
+                                onClick={() => setViewMode('list')}
+                            ></button>
+                            {defaultFilters && options.pools_data_source === 'local_wp' ? <button
+                                className={showFilters ? classMap.paginator.controls.open : classMap.paginator.controls.close}
+                                onClick={() => setShowFilters(!showFilters)}
+                            ></button> : null}
+                        </div>
                     </div>
                     {defaultFilters && showFilters ? (
                         <div className={classMap.paginator.filters.container}>
@@ -179,14 +176,45 @@ export const Paginator = ({
                     ): null}
                 </div>
             ) : null}
-            <div className={`${classMap.paginator.body} ${className}`}>
-                {loading
-                    ? <Loader/>
-                    : items?.length
-                        ? items.map((item, i) => renderer(item, i))
-                        : <div className={classMap.notFound}>{notFound || options.label_no_assets}</div>
-                }
-            </div>
+            {viewMode === 'list' ? (
+                <div className={`${classMap.table.wrapper} ${className}`}>
+                    <table className={`${classMap.paginator.table}`}>
+                        <thead>
+                            <tr>
+                                <th className={classMap.table.th}></th>
+                                <th className={classMap.table.th}>Name / ID</th>
+                                <th className={classMap.table.th}>Fee</th>
+                                <th className={classMap.table.th}>Fixed Cost</th>
+                                <th className={classMap.table.th}>Stake</th>
+                                <th className={classMap.table.th}>Pledge</th>
+                                <th className={classMap.table.th}>Lifetime Blocks</th>
+                                <th className={classMap.table.th}>Blocks last Epoch</th>
+                                <th className={classMap.table.th}>Delegators</th>
+                                <th className={classMap.table.th}>Delegate</th>
+                                <th className={classMap.table.th}>Compare</th>
+                                <th className={classMap.table.th}></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading
+                                ? <Loader/>
+                                : items?.length
+                                    ? items.map((item, i) => renderer(item, i, viewMode))
+                                    : <tr className={classMap.notFound}><td>{notFound || options.label_no_assets}</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <div className={`${classMap.paginator.body} ${className}`}>
+                    {loading
+                        ? <Loader/>
+                        : items?.length
+                            ? items.map((item, i) => renderer(item, i, viewMode))
+                            : <div className={classMap.notFound}>{notFound || options.label_no_assets}</div>
+                    }
+                </div>
+            )}
         </div>
     )
 }

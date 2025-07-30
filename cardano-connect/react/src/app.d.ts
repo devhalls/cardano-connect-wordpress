@@ -16,6 +16,7 @@ declare interface PaginatedData<T> {
 declare type Options = {
     version: string
     plugin_name: string
+    gates: {name: string; value: string}[]
     mainnet_active: boolean
     login_redirect: null|string
     logout_redirect: null|string
@@ -69,6 +70,9 @@ declare type Options = {
     label_pool_lifetime_blocks: string
     label_pool_last_epoch_blocks: string
     label_pool_delegators: string
+    label_pool_pledge_not_met_error: string
+    label_pool_stake_saturated_error: string
+    label_pool_is_mithril_signer: string
     label_compare_view_pools: string
     label_compare_view_dreps: string
     label_compare_add: string
@@ -212,6 +216,7 @@ declare type PoolData = {
     metadata: PoolMetadata|null
     metadata_extended: PoolMetadataExtended|null
     synced_at: string | null
+    mithril_signer: boolean | null
 }
 declare type PoolMetadata = {
     url: string|null
@@ -334,14 +339,16 @@ declare interface ComponentPools {
     whitelistString?: string,
     perPage?: number
     notFound?: string
-    view?: boolean
+    view?: 'mini' | 'list' | 'grid'
+    gated?: string
+    gatedPlaceholder?: string
+    gate?: string
+    gateHideComponent?: boolean
     pools?: PoolData[]
 }
 declare interface ComponentPool {
     poolId: string
-    index: number
-    delegateStake?: (poolId: string) => Promise<void>
-    key?: string
+    index?: number
     pool?: PoolData
 }
 declare interface ComponentDreps {
@@ -360,11 +367,23 @@ declare interface ComponentBalance {
     className?: string
 }
 declare interface ComponentBar {
-    title: string | React.ReactElement
+    title?: string | React.ReactElement
     content?: string | React.ReactElement
     percentage: number
     colorMap?: { [key in number]: string }
     defaultColor?: string
+    className?: string
+}
+declare interface ComponentSocials {
+    poolData: PoolData
+    poolId: string
+    className?: string
+}
+declare interface ComponentPoolImage {
+    poolData: PoolData
+    poolId: string
+    isSaturated?: boolean
+    isNoPledged?: boolean
     className?: string
 }
 declare interface ComponentStats {
@@ -394,17 +413,24 @@ declare interface ComponentLoader {
     color?: string
 }
 declare interface ComponentPaginator<T> {
-    renderer: (item: T, index: number) => React.ReactElement
+    renderer: (item: T, index: number, viewMode: 'list' | 'grid') => React.ReactElement
     fetcher: (page: number, perPage: number, filters?: FilterPost[]) => Promise<PaginatedData<T>>
     perPage?: number
     className?: string
     notFound?: string
     defaultFilters?: Filter[]
+    defaultView?: 'list' | 'grid'
 }
 declare interface ComponentFilter {
     filter: Filter,
     setFilter: (filter: Filter) => void
     prefix?: string
+}
+declare interface ComponentGated {
+    gated: string | null
+    gatedPlaceholder: string | null
+    gate: string | null
+    className?: string
 }
 declare interface ComponentDataRows {
     rows: {

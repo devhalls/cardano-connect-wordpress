@@ -26,7 +26,7 @@ export const AxisY = ({
             value,
             yOffset: yScale(value),
         }));
-    }, [yScale]);
+    }, [yScale, range, tick.spacing]);
 
     return (
         <>

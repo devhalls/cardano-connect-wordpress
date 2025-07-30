@@ -54,7 +54,7 @@ export const CompareModal = () => {
             label: options.label_paginate_search_metadata,
             type: 'checkbox',
             key: 'no_metadata',
-            value: true,
+            value: false,
             order: 2,
         },
         {
@@ -400,25 +400,30 @@ export const CompareModal = () => {
                         {(loading || !views) ? <Loader/> : (
                             <>
                                 {filters ? (
-                                    <div className={'classMap.paginationFiltersContainer'}>
-                                        {filters?.sort((a, b) => a.order < b.order ? -1 : 1)?.map((f) =>
-                                            <Filter
-                                                key={f.key}
-                                                prefix={'compare-filters-'}
-                                                filter={updatedFilters?.find(g => g.key === f.key) || f}
-                                                setFilter={(f) => {
-                                                    const updated = updatedFilters.filter(g => g.key !== f.key)
-                                                    setUpdatedFilters([...updated, f])
-                                                }}
-                                            />
-                                        )}
-                                        <div className={'classMap.paginationFiltersButtons'}>
-                                            <button
-                                                className={`${loading || JSON.stringify(updatedFilters) === JSON.stringify(filters) ? 'classMap.paginationUpdateDisabled' : 'classMap.paginationUpdate'}`}
-                                                disabled={loading || JSON.stringify(updatedFilters) === JSON.stringify(filters)}
-                                                onClick={() => handleUpdateFilter(updatedFilters)}>
-                                                {options.label_paginate_search_update}
-                                            </button>
+                                    <div className={classMap.paginator.header}>
+                                        <div className={classMap.paginator.filters.container}>
+                                            <div className={classMap.paginator.filters.list}>
+                                                {filters?.sort((a, b) => a.order < b.order ? -1 : 1)?.map((f) =>
+                                                    <Filter
+                                                        key={f.key}
+                                                        prefix={'compare-filters-'}
+                                                        filter={updatedFilters?.find(g => g.key === f.key) || f}
+                                                        setFilter={(f) => {
+                                                            const updated = updatedFilters.filter(g => g.key !== f.key)
+                                                            setUpdatedFilters([...updated, f])
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className={classMap.paginator.filters.buttons}>
+                                                <button
+                                                    className={`${classMap.paginator.filters.update}`}
+                                                    disabled={loading || JSON.stringify(updatedFilters) === JSON.stringify(filters)}
+                                                    onClick={() => handleUpdateFilter(updatedFilters)}>
+                                                    {options.label_paginate_search_update}
+                                                </button>
+                                                <span className={classMap.paginator.filters.item}>{allPoolStats.length} {options.label_paginate_items}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : null}

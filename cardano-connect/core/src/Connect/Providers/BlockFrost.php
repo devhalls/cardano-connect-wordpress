@@ -107,7 +107,6 @@ class BlockFrost extends Base implements Account, Asset, StakePool, DrepInterfac
 
 	// Drep interface.
 
-
 	public function getDReps( int $page = 1, int $count = 10, ?array $filters = null ): ResponseDreps
 	{
 		$response = $this->get('governance/dreps', [

@@ -1,30 +1,35 @@
 import React, {useEffect} from "react";
-import {classMap, filterPaginatedRange, translateError} from "../library/utils";
+import {classMap, filterPaginatedRange} from "../library/utils";
 import {backendGetPools} from "../library";
 import {Paginator} from "./common/Paginator";
 import {Pool as PoolComponent} from "./Pool";
 import {PoolMini as PoolMiniComponent} from "./PoolMini";
+import {PoolList as PoolListComponent} from "./PoolList";
 import {useWallet} from "@meshsdk/react";
-import {Transaction} from "@meshsdk/core";
-import {useAppDispatch, useAppSelector} from "../library/state";
+import {useAppSelector} from "../library/state";
 import {getUserState} from "../library/user";
 import {getOptionState} from "../library/option";
-import {setMessage} from "../library/message";
+import {Gated} from "./common/Gated";
 
 export const Pools = ({
     whitelistString = null,
     perPage = 10, // Set to 0 to disable pagination
     notFound,
     view,
+    gated,
+    gatedPlaceholder,
+    gate,
+    gateHideComponent,
     pools
 }: ComponentPools) => {
 
     // APP State
 
-    const dispatch = useAppDispatch()
     const user: UserState = useAppSelector(getUserState)
     const options: OptionState = useAppSelector(getOptionState)
-    const { connect, wallet, connected} = useWallet()
+    const { connect, connected} = useWallet()
+
+    // Function to fetch the list of pools.
 
     const getPools = async (page: number, perPage: number, filters?: Filter[]|null) => {
         if (whitelistString) {
@@ -46,37 +51,6 @@ export const Pools = ({
         return data.data
     }
 
-    const delegateStake = async (poolId: string) => {
-        if (!connected || !wallet) {
-            return
-        }
-        try {
-            const rewardAddress = user.account?.stake_address;
-            const tx = new Transaction({ initiator: wallet });
-            if (!user.account.active) {
-                tx.registerStake(rewardAddress);
-            }
-            tx.delegateStake(rewardAddress, poolId);
-            const unsignedTx = await tx.build();
-            const signedTx = await wallet.signTx(unsignedTx);
-            const txHash = await wallet.submitTx(signedTx);
-        } catch (e) {
-            dispatch(setMessage({
-                message: translateError(e.toString()),
-                type: 'error',
-                timeout: 16000
-            }))
-        }
-    }
-
-    // Connect mesh provider if not already connected.
-
-    useEffect(() => {
-        if (!connected && user?.web3?.cardano_connect_wallet) {
-            connect(user.web3.cardano_connect_wallet).then()
-        }
-    }, [user?.web3?.cardano_connect_wallet]);
-
     const filters: Filter[] = [
         {
             placeholder: options.label_paginate_search_text_placeholder,
@@ -90,7 +64,7 @@ export const Pools = ({
             label: options.label_paginate_search_metadata,
             type: 'checkbox',
             key: 'no_metadata',
-            value: true,
+            value: false,
             order: 2,
         },
         {
@@ -109,7 +83,7 @@ export const Pools = ({
             max: 1000,
             order: 4,
             format: (v) => parseInt(v)/1000,
-            display: (v) => v != '0' ? '< ' + parseInt(v)/10 + '%' : 'any%'
+            display: (v) => v !== '0' ? '< ' + parseInt(v)/10 + '%' : 'any%'
         },
         {
             label: options.label_paginate_search_order,
@@ -139,52 +113,79 @@ export const Pools = ({
         },
     ]
 
+    // Connect mesh provider if not already connected.
+
+    useEffect(() => {
+        if (!connected && user?.web3?.cardano_connect_wallet) {
+            connect(user.web3.cardano_connect_wallet).then()
+        }
+    }, [user?.web3?.cardano_connect_wallet, connected, connect]);
+
     return pools ? (
         <>
             {pools.length > 0 ? pools.map(((p, i) => (
                 <>
-                    {view ?
+                    {view === 'mini' ?
                         <PoolMiniComponent
                             key={p.pool_id}
                             poolId={p.pool_id}
                             index={i}
-                            delegateStake={delegateStake}
-                        /> : <PoolComponent
+                        />
+                    : view === 'list' ?
+                        <PoolListComponent
                             key={p.pool_id}
                             poolId={p.pool_id}
                             index={i}
-                            delegateStake={delegateStake}
                         />
-                    }
+                    : view === 'grid' ?
+                        <PoolComponent
+                            key={p.pool_id}
+                            poolId={p.pool_id}
+                            index={i}
+                        />
+                    : null }
                 </>
             ))) : (
                 <div className={classMap.notFound}>{notFound || options.label_no_pools}</div>
             )}
         </>
     ) : (
-        <Paginator
-            className={classMap.pools}
-            perPage={perPage}
-            fetcher={getPools}
-            notFound={notFound || options.label_no_pools}
-            defaultFilters={filters}
-            renderer={(p: Pool, i: number) =>
-                <>
-                    {view ?
-                        <PoolMiniComponent
-                            key={p.pool_id}
-                            poolId={p.pool_id}
-                            index={i}
-                            delegateStake={delegateStake}
-                        /> : <PoolComponent
-                            key={p.pool_id}
-                            poolId={p.pool_id}
-                            index={i}
-                            delegateStake={delegateStake}
-                        />
+        <>
+            {!gated || (gated && !gateHideComponent) ? (
+                <Paginator
+                    className={classMap.pools}
+                    perPage={perPage}
+                    fetcher={getPools}
+                    notFound={notFound || options.label_no_pools}
+                    defaultFilters={filters}
+                    defaultView={view === 'list' ? 'list' : 'grid'}
+                    renderer={(p: Pool, i, viewMode) =>
+                        <React.Fragment key={p.pool_id}>
+                            {viewMode === 'list' ?
+                                <PoolListComponent
+                                    poolId={p.pool_id}
+                                    index={i}
+                                />
+                                : viewMode === 'grid' ?
+                                    <>
+                                        {view === 'mini' ? (
+                                            <PoolMiniComponent
+                                                poolId={p.pool_id}
+                                                index={i}
+                                            />
+                                        ) : (
+                                            <PoolComponent
+                                                poolId={p.pool_id}
+                                                index={i}
+                                            />
+                                        )}
+                                    </>
+                                    : null}
+                        </React.Fragment>
                     }
-                </>
-            }
-        />
+                />
+            ) : null }
+            {gated ? <Gated gated={gated} gatedPlaceholder={gatedPlaceholder} gate={gate}/> : null}
+        </>
     )
 }

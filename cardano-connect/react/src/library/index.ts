@@ -157,3 +157,11 @@ export async function backendGetDrep(data: {
         ? mockApiDrep(data.drepId)
         : await get(`dreps/${data.drepId}`)
 }
+
+export async function backendGetWordPressBlock(data: {
+    nonce: string,
+    slug: string
+}): Promise<AjaxResponse<{html: string; title: string; passed: boolean}>> {
+    instance.defaults.headers.common['X-WP-Nonce'] = data.nonce
+    return nodeEnv === 'development' ? mockOption : await post(`render-block`, { slug: data.slug });
+}

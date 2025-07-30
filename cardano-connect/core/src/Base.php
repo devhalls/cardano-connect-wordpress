@@ -85,6 +85,9 @@ abstract class Base {
 		self::SETTING_PREFIX . 'label_pool_lifetime_blocks',
 		self::SETTING_PREFIX . 'label_pool_last_epoch_blocks',
 		self::SETTING_PREFIX . 'label_pool_delegators',
+		self::SETTING_PREFIX . 'label_pool_pledge_not_met_error',
+		self::SETTING_PREFIX . 'label_pool_stake_saturated_error',
+		self::SETTING_PREFIX . 'label_pool_is_mithril_signer',
 		self::SETTING_PREFIX . 'label_compare_view_pools',
 		self::SETTING_PREFIX . 'label_compare_view_dreps',
 		self::SETTING_PREFIX . 'label_compare_add',
@@ -98,6 +101,7 @@ abstract class Base {
 	public const OPTION_FIELDS_NAMES = [
 		'version',
 		'plugin_name',
+		'gates',
 		// Main settings.
 		'mainnet_active',
 		'login_redirect',
@@ -154,6 +158,9 @@ abstract class Base {
 		'label_pool_lifetime_blocks',
 		'label_pool_last_epoch_blocks',
 		'label_pool_delegators',
+		'label_pool_pledge_not_met_error',
+		'label_pool_stake_saturated_error',
+		'label_pool_is_mithril_signer',
 		'label_compare_view_pools',
 		'label_compare_view_dreps',
 		'label_compare_add',
@@ -239,13 +246,27 @@ abstract class Base {
 	abstract public function run();
 
 	/**
-	 * Returns the WP Cardano Connect plugin options.
+	 * Returns the WP Cardano Connect plugin options for the UI.
 	 * Loads data from WPCCSettings and formats to array with new keys ready for UI consumption.
 	 */
 	protected function loadOptions(): array {
 		$ui_options         = array_merge( array_flip( self::OPTION_FIELDS_NAMES ), [
 				'version'     => $this->version,
-				'plugin_name' => $this->plugin_name
+				'plugin_name' => $this->plugin_name,
+				'gates'       => [
+					[
+						'label' => __( 'No condition, always show content', 'cardano-connect' ),
+						'value' => 'none'
+					],
+					[
+						'label' => __( 'Delegated to any pool in the list', 'cardano-connect' ),
+						'value' => 'any'
+					],
+					[
+						'label' => __( 'Delegated to all pools in the list', 'cardano-connect' ),
+						'value' => 'all'
+					],
+				]
 			]
 		);
 		$configured_options = $this->getSetting();
@@ -481,11 +502,11 @@ abstract class Base {
 								'note'    => __( 'Select the pool data source for testnet pools', 'cardano-connect' ),
 								'options' => $pool_providers
 							],
-							self::SETTING_PREFIX . 'pools_data_cron_import'   => [
+							self::SETTING_PREFIX . 'pools_data_cron_import'      => [
 								'default' => false,
 								'label'   => __( 'Automatically import data?', 'cardano-connect' ),
 								'type'    => 'checkbox',
-								'note'    => __( 'Check this option to import pool data from the data source automatically using WP cron. We recommend configuring your cron jobs to run using your servers cron tab every minute. This allows imports to operate more effectively.',	'cardano-connect' ),
+								'note'    => __( 'Check this option to import pool data from the data source automatically using WP cron. We recommend configuring your cron jobs to run using your servers cron tab every minute. This allows imports to operate more effectively.', 'cardano-connect' ),
 							],
 						]
 					]
@@ -911,7 +932,7 @@ abstract class Base {
 							],
 
 
-							self::SETTING_PREFIX . 'label_pool_synced'            => [
+							self::SETTING_PREFIX . 'label_pool_synced'                => [
 								'default' => __( 'Last synced -', 'cardano-connect' ),
 								'label'   => __( 'Pool synced time label', 'cardano-connect' ),
 								'type'    => 'text',
@@ -920,7 +941,7 @@ abstract class Base {
 								],
 								'note'    => __( 'Text displayed next to the pools last synced time', 'cardano-connect' )
 							],
-							self::SETTING_PREFIX . 'label_pool_lifetime_blocks'   => [
+							self::SETTING_PREFIX . 'label_pool_lifetime_blocks'       => [
 								'default' => __( 'Lifetime blocks:', 'cardano-connect' ),
 								'label'   => __( 'Pools lifetime block count label', 'cardano-connect' ),
 								'type'    => 'text',
@@ -929,7 +950,7 @@ abstract class Base {
 								],
 								'note'    => __( 'Text displayed next to the pools lifetime blocks count', 'cardano-connect' )
 							],
-							self::SETTING_PREFIX . 'label_pool_last_epoch_blocks' => [
+							self::SETTING_PREFIX . 'label_pool_last_epoch_blocks'     => [
 								'default' => __( 'Last epoch blocks:', 'cardano-connect' ),
 								'label'   => __( 'Pool last epochs label', 'cardano-connect' ),
 								'type'    => 'text',
@@ -938,7 +959,7 @@ abstract class Base {
 								],
 								'note'    => __( 'Text displayed next to the pools last epoch block count', 'cardano-connect' )
 							],
-							self::SETTING_PREFIX . 'label_pool_delegators'        => [
+							self::SETTING_PREFIX . 'label_pool_delegators'            => [
 								'default' => __( 'Delegators:', 'cardano-connect' ),
 								'label'   => __( 'Pool delegator count label', 'cardano-connect' ),
 								'type'    => 'text',
@@ -947,14 +968,41 @@ abstract class Base {
 								],
 								'note'    => __( 'Text displayed next to the pools delegator count', 'cardano-connect' )
 							],
-							self::SETTING_PREFIX . 'compare_labels'               => [
+							self::SETTING_PREFIX . 'label_pool_pledge_not_met_error'  => [
+								'default' => __( 'This pool has not met its pledge and you will NOT receive rewards.', 'cardano-connect' ),
+								'label'   => __( 'Pledge not met error message', 'cardano-connect' ),
+								'type'    => 'text',
+								'rules'   => [
+									'required',
+								],
+								'note'    => __( 'Text displayed in tooltip on pools that do not have their pledge met', 'cardano-connect' )
+							],
+							self::SETTING_PREFIX . 'label_pool_stake_saturated_error' => [
+								'default' => __( 'This pool is saturated and you will receive diminished rewards.', 'cardano-connect' ),
+								'label'   => __( 'Pool saturate error message', 'cardano-connect' ),
+								'type'    => 'text',
+								'rules'   => [
+									'required',
+								],
+								'note'    => __( 'Text displayed in tooltip on pools that have become saturated', 'cardano-connect' )
+							],
+							self::SETTING_PREFIX . 'label_pool_is_mithril_signer'     => [
+								'default' => __( 'Mithril signer (active in current epoch)', 'cardano-connect' ),
+								'label'   => __( 'Mithril signer message', 'cardano-connect' ),
+								'type'    => 'text',
+								'rules'   => [
+									'required',
+								],
+								'note'    => __( 'Text displayed in tooltip on pools that are registered Mithril signers for the current epoch', 'cardano-connect' )
+							],
+							self::SETTING_PREFIX . 'compare_labels'                   => [
 								'type'  => 'title',
 								'label' => __( 'Copy text labels', 'cardano-connect' ),
 								'args'  => [
 									'class' => 'wpcc-row-title',
 								]
 							],
-							self::SETTING_PREFIX . 'label_compare_view_pools'     => [
+							self::SETTING_PREFIX . 'label_compare_view_pools'         => [
 								'default' => __( 'Compare Pools', 'cardano-connect' ),
 								'label'   => __( 'Compare Pools modal button', 'cardano-connect' ),
 								'type'    => 'text',
@@ -963,7 +1011,7 @@ abstract class Base {
 								],
 								'note'    => __( 'Text displayed in the comparison modal show Pools button and as the modal title, shows the popup when clicked', 'cardano-connect' )
 							],
-							self::SETTING_PREFIX . 'label_compare_view_dreps'     => [
+							self::SETTING_PREFIX . 'label_compare_view_dreps'         => [
 								'default' => __( 'Compare DReps', 'cardano-connect' ),
 								'label'   => __( 'Compare DReps modal button', 'cardano-connect' ),
 								'type'    => 'text',
@@ -972,7 +1020,7 @@ abstract class Base {
 								],
 								'note'    => __( 'Text displayed in the comparison modal show DReps button and as the modal title, shows the popup when clicked', 'cardano-connect' )
 							],
-							self::SETTING_PREFIX . 'label_compare_add'            => [
+							self::SETTING_PREFIX . 'label_compare_add'                => [
 								'default' => __( 'Add to compare', 'cardano-connect' ),
 								'label'   => __( 'Add to compare button label', 'cardano-connect' ),
 								'type'    => 'text',
@@ -981,7 +1029,7 @@ abstract class Base {
 								],
 								'note'    => __( 'Text displayed on add to compare button tooltips', 'cardano-connect' )
 							],
-							self::SETTING_PREFIX . 'label_compare_remove'         => [
+							self::SETTING_PREFIX . 'label_compare_remove'             => [
 								'default' => __( 'Remove from compare', 'cardano-connect' ),
 								'label'   => __( 'Remove from compare button label', 'cardano-connect' ),
 								'type'    => 'text',
@@ -990,7 +1038,7 @@ abstract class Base {
 								],
 								'note'    => __( 'Text displayed on remove from compare button tooltips', 'cardano-connect' )
 							],
-							self::SETTING_PREFIX . 'label_compare_no_items'       => [
+							self::SETTING_PREFIX . 'label_compare_no_items'           => [
 								'default' => __( 'No items selected for comparison', 'cardano-connect' ),
 								'label'   => __( 'No items in comparison list text', 'cardano-connect' ),
 								'type'    => 'text',

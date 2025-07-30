@@ -2,6 +2,7 @@
 
 namespace WPCC;
 
+use WP_REST_Request;
 use WPCC\Connect\Base as ConnectBase;
 use WPCC\Connect\Responses\Response;
 
@@ -137,6 +138,15 @@ class Api extends Base {
 		);
 		register_rest_route(
 			$this->plugin_name,
+			'/dreps/(?P<id>[a-zA-Z0-9-]+)',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'getMithrilSigners' ],
+				'permission_callback' => '__return_true'
+			]
+		);
+		register_rest_route(
+			$this->plugin_name,
 			'/rewards/',
 			[
 				'methods'             => 'GET',
@@ -144,6 +154,40 @@ class Api extends Base {
 				'permission_callback' => '__return_true'
 			]
 		);
+
+		// Create an endpoint so we can fetch synced wp_blocks (patterns) for selection.
+		register_rest_route( $this->plugin_name, '/synced-patterns', [
+			'methods'             => 'GET',
+			'callback'            => function () {
+				$args  = [
+					'post_type'      => 'wp_block',
+					'post_status'    => 'publish',
+					'posts_per_page' => - 1,
+				];
+				$query = get_posts( $args );
+
+				return array_map( static function ( $post ) {
+					return [
+						'id'      => $post->ID,
+						'label'   => $post->post_title,
+						'content' => $post->post_content,
+						'value'   => $post->post_name,
+					];
+				}, $query );
+			},
+			'permission_callback' => '__return_true',
+		] );
+		register_rest_route( $this->plugin_name, '/render-block', [
+			'methods'             => 'POST',
+			'callback'            => [ $this, 'renderGatedBlock' ],
+			'permission_callback' => '__return_true',
+			'args'                => [
+				'slug' => [
+					'required' => true,
+					'type'     => 'string',
+				],
+			],
+		] );
 	}
 
 	// Locally provided.
@@ -167,6 +211,34 @@ class Api extends Base {
 			'data'    => $data,
 			'nonce'   => wp_create_nonce( 'wp_rest' )
 		];
+	}
+
+	/**
+	 * Returns the rendered HTML for the blocks 'slug'.
+	 * Also returns 'passed' flag showing if the user has passed the conditions or not to show the gated content
+	 */
+	public function renderGatedBlock( WP_REST_Request $request ): array {
+		$slug    = sanitize_text_field( $request->get_param( 'slug' ) );
+		$args    = [
+			'post_type'      => 'wp_block',
+			'post_status'    => 'publish',
+			'posts_per_page' => - 1,
+			'name'           => $slug,
+		];
+		$query   = get_posts( $args );
+		$pattern = ! empty( $query ) && ! is_wp_error( $query ) ? $query[0] : null;
+		if ( $pattern && $pattern->post_name === $slug ) {
+			$html = do_blocks( $pattern->post_content );
+
+			// @todo set the 'passed' param using the connector
+			return $this->returnResponse( true, [
+				'html'   => $html,
+				'title'  => $pattern->post_title,
+				'passed' => false
+			] );
+		}
+
+		return $this->returnResponse( false, [], __( 'Pattern not found', 'cardano-connect' ) );
 	}
 
 	// Connect signer provider.
@@ -421,8 +493,6 @@ class Api extends Base {
 		);
 	}
 
-	// Private helper methods.
-
 	/**
 	 * Get a list of dreps from the provider API.
 	 * @route /cardano-connect/dreps
@@ -479,6 +549,21 @@ class Api extends Base {
 			? $user_data['web3']['cardano_connect_stake_address']
 			: $user_data['web3']['cardano_connect_stake_address_testnet'];
 		$data      = $this->connectDataProvider->getStakeHistory( $address );
+		if ( $data->success ) {
+			return $this->returnResponse(
+				true,
+				(array) $data->response
+			);
+		}
+
+		return $this->returnResponse(
+			false,
+			[]
+		);
+	}
+
+	public function getMithrilSigners(): array {
+		$data = $this->connectDataProvider->getMithrilSigners();
 		if ( $data->success ) {
 			return $this->returnResponse(
 				true,

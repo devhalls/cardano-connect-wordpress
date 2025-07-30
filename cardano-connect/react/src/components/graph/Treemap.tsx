@@ -46,7 +46,7 @@ export const Treemap = ({
             y: yLocal,
         })
         setPlotToolTip(leaf)
-    }, [graphContainer, tooltipContainer])
+    }, [graphContainer, tooltipContainer, barSpacing])
 
     const getRectangles = root.leaves().map((leaf) => {
         const visibleText = leaf.x1 - leaf.x0 > 120 && leaf.y1 - leaf.y0 > 100

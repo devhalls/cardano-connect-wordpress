@@ -81,14 +81,29 @@ for (let i = 0; i < balanceElements.length; i++) {
 const poolsElements = document.getElementsByClassName('wp-block-cardano-connect-pools')
 for (let i = 0; i < poolsElements.length; i++) {
     const pools = ReactDOM.createRoot(poolsElements[i]);
+    const whitelist: string = poolsElements[i].getAttribute('data-whitelist')
+        ? poolsElements[i].getAttribute('data-whitelist')
+        : undefined
     const perPage: number = poolsElements[i].getAttribute('data-per_page')
         ? parseInt(poolsElements[i].getAttribute('data-per_page'))
         : undefined
     const notFound: string = poolsElements[i].getAttribute('data-not_found')
         ? poolsElements[i].getAttribute('data-not_found')
         : undefined
-    const view: boolean = poolsElements[i].getAttribute('data-view')
-        ? true
+    const view: "grid" | "mini" | "list" = poolsElements[i].getAttribute('data-view')
+        ? poolsElements[i].getAttribute('data-view') as "grid" | "mini" | "list"
+        : 'grid'
+    const gated: string = poolsElements[i].getAttribute('data-gated')
+        ? poolsElements[i].getAttribute('data-gated')
+        : undefined
+    const gatedPlaceholder: string = poolsElements[i].getAttribute('data-gated_placeholder')
+        ? poolsElements[i].getAttribute('data-gated_placeholder')
+        : undefined
+    const gate: string = poolsElements[i].getAttribute('data-gate')
+        ? poolsElements[i].getAttribute('data-gate')
+        : undefined
+    const gateHideComponent: string = poolsElements[i].getAttribute('data-gate_hide_component')
+        ? poolsElements[i].getAttribute('data-gate_hide_component')
         : undefined
     pools.render(
         <React.StrictMode>
@@ -99,7 +114,11 @@ for (let i = 0; i < poolsElements.length; i++) {
                             perPage={perPage}
                             notFound={notFound}
                             view={view}
-                            whitelistString={poolsElements[i].getAttribute('data-whitelist')}
+                            whitelistString={whitelist}
+                            gated={gated}
+                            gatedPlaceholder={gatedPlaceholder}
+                            gate={gate}
+                            gateHideComponent={!!gateHideComponent}
                         />
                     </PersistGate>
                 </Provider>

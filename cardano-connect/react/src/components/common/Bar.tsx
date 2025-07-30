@@ -12,10 +12,11 @@ export const Bar = ({
     let found = null
     Object.keys(colorMap).map(key => {
         found = percentage >= parseInt(key) ? key : found
+        return key
     })
     return (
         <div className={`${classMap.bar} ${className}`}>
-            <div className={classMap.barTitle}>{title}</div>
+            {title && <div className={classMap.barTitle}>{title}</div>}
             <div className={classMap.barContent}>
                 <div className={classMap.barCoverage}
                      style={{

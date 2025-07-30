@@ -87,64 +87,82 @@ class Plugin extends Base {
 	/**
 	 * Include the connector shortcode template.
 	 */
-	public function registerConnectorShortcode(): string {
-		return $this->getTemplate( 'shortcode/cardano-connect-connector' );
+	public function registerConnectorShortcode( $attributes = [] ): string {
+		return $this->registerBlockShortcode( 'connector', $attributes );
+	}
+
+	/**
+	 * Register a blocks shortcode, reads params from the block.js file to pass to the template.
+	 *
+	 * @param string $name the name of the block folder
+	 * @param array $attributes
+	 *
+	 * @return string
+	 */
+	private function registerBlockShortcode( string $name, array $attributes = [] ): string {
+		$file_path  = $this->plugin_path . 'blocks/' . $name . '/src/block.json';
+		$definition = [];
+		if ( file_exists( $file_path ) ) {
+			$metadata = wp_json_file_decode(
+				$file_path,
+				[ 'associative' => true ]
+			);
+			if ( ! empty( $metadata['attributes'] ) ) {
+				$definition = array_fill_keys(
+					array_keys( $metadata['attributes'] ),
+					null
+				);
+			}
+		}
+		$attributes = shortcode_atts(
+			$definition, $attributes
+		);
+
+		return $this->getTemplate(
+			'partial/block-shortcode',
+			[ 'name' => $name, 'attributes' => $attributes ]
+		);
 	}
 
 	/**
 	 * Include the assets shortcode template.
 	 */
 	public function registerAssetsShortcode( $attributes = [] ): string {
-		$formatted_attributes = shortcode_atts(
-			array(
-				'whitelist'   => null,
-				'per_page'    => null,
-				'hide_titles' => null,
-				'not_found'   => null,
-			), $attributes
-		);
-
-		return $this->getTemplate( 'shortcode/cardano-connect-assets', $formatted_attributes );
+		return $this->registerBlockShortcode( 'assets', $attributes );
 	}
 
 	/**
 	 * Include the balance shortcode template.
 	 */
-	public function registerBalanceShortcode(): string {
-		return $this->getTemplate( 'shortcode/cardano-connect-balance' );
+	public function registerBalanceShortcode( $attributes = [] ): string {
+		return $this->registerBlockShortcode( 'balance', $attributes );
 	}
 
 	/**
 	 * Include the pools shortcode template.
 	 */
 	public function registerPoolsShortcode( $attributes = [] ): string {
-		$formatted_attributes = shortcode_atts(
-			array(
-				'whitelist' => null,
-				'per_page'  => null,
-				'not_found' => null,
-				'view' => null,
-			), $attributes
-		);
+		$attributes['whitelist'] = isset( $attributes['whitelist'] )
+			? str_replace( ',', "\n", $attributes['whitelist'] )
+			: [];
 
-		return $this->getTemplate( 'shortcode/cardano-connect-pools', $formatted_attributes );
+		return $this->registerBlockShortcode( 'pools', $attributes );
 	}
 
 	/**
 	 * Include the DReps shortcode template.
 	 */
 	public function registerDRepsShortcode( $attributes = [] ): string {
-		$formatted_attributes = shortcode_atts(
-			array(
-				'whitelist' => null,
-				'per_page'  => null,
-				'not_found' => null,
-			), $attributes
-		);
+		$attributes['whitelist'] = isset( $attributes['whitelist'] )
+			? str_replace( ',', "\n", $attributes['whitelist'] )
+			: [];
 
-		return $this->getTemplate( 'shortcode/cardano-connect-dreps', $formatted_attributes );
+		return $this->registerBlockShortcode( 'dreps', $attributes );
 	}
 
+	/**
+	 * Register plugin post types.
+	 */
 	public function registerPostTypes(): void {
 		$stake_pool     = new StakePool();
 		$testnet_suffix = $this->getSetting( Base::SETTING_PREFIX . 'mainnet_active' ? '' : '_testnet' );

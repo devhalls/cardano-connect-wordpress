@@ -32,10 +32,12 @@ import './editor.scss';
 export default function Edit() {
 	return (
 		<div { ...useBlockProps() }>
-			<span className={ 'connector-icon' }></span>
-			<span className={ 'connector-button-text' }>
-				{ __( 'Cardano Connect', 'cardano-connect' ) }
-			</span>
+			<div className={'connector-control'}>
+				<span className={ 'connector-icon' }></span>
+				<span className={ 'connector-button-text' }>
+					{ __( 'Connect Wallet', 'cardano-connect' ) }
+				</span>
+			</div>
 		</div>
 	);
 }
