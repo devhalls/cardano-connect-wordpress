@@ -285,6 +285,7 @@ export const classMap = {
     balanceRow: 'wpcc-balance-row',
     balanceCol: 'wpcc-balance-col',
     balanceTotalRow: 'wpcc-balance-total-row wpcc-balance-row',
+    balanceEmpty: 'wpcc-balance-empty',
     // Asset list classes.
     assetsContainer: 'wpcc-assets-container',
     assetTitle: 'wpcc-assets-title',

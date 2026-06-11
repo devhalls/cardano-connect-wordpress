@@ -468,6 +468,14 @@
     display: flex;
     flex-direction: column;
 }
+.wpcc-balance-empty {
+    color: var(--wpcc-text-color-dark);
+    background: var(--wpcc-primary-bg);
+    border-radius: calc(var(--wpcc-border-radius) / 2);
+    padding: calc(var(--wpcc-base-sizing) / 2);
+    text-align: center;
+    line-height: 1.5;
+}
 
 /** Assets component **/
 

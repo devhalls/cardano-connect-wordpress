@@ -65,7 +65,7 @@ export const Balance = ({
                     {loading ? (
                         <Loader />
                     ) : !walletExtensionAvailable ? (
-                        <div className={classMap.notFound}>{options.label_empty}</div>
+                        <div className={classMap.balanceEmpty}>{options.label_empty}</div>
                     ) : (
                         <>
                             {user.connected ? (

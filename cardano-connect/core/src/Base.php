@@ -173,7 +173,7 @@ abstract class Base {
 	/**
 	 * Url to the plugin guide.
 	 */
-	public const PLUGIN_GUIDE = 'https://upstream.org.uk/cardano-connect/';
+	public const PLUGIN_GUIDE = 'https://upstream.org.uk/cardano-connect-wordpress-plugin/';
 
 	/**
 	 * Current plugin version.

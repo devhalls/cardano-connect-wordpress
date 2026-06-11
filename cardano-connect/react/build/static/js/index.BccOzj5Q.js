@@ -120602,6 +120602,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         balanceRow: "wpcc-balance-row",
         balanceCol: "wpcc-balance-col",
         balanceTotalRow: "wpcc-balance-total-row wpcc-balance-row",
+        balanceEmpty: "wpcc-balance-empty",
         assetsContainer: "wpcc-assets-container",
         assetTitle: "wpcc-assets-title",
         assetTitleText: "wpcc-assets-title-text",
@@ -123396,7 +123397,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                   }) : null
                 ]
               }) : jsxRuntimeExports.jsx("div", {
-                className: classMap.notFound,
+                className: classMap.balanceEmpty,
                 children: z.label_empty
               })
             }) : null,
