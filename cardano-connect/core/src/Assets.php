@@ -35,6 +35,7 @@ class Assets extends Base {
 	public function run(): void {
 		add_action( 'admin_enqueue_scripts', [ $this, 'registerAdminAssets' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'registerFrontendAssets' ] );
+		add_filter( 'script_loader_tag', [ $this, 'addModuleTypeToReactScript' ], 10, 3 );
 	}
 
 	/**
@@ -64,6 +65,7 @@ class Assets extends Base {
 		foreach ( $entrypoints as $entrypoint ) {
 			if ( str_contains( $entrypoint, '.js' ) ) {
 				wp_enqueue_script( 'wpcc-react-js', $this->react_cdn . $entrypoint, [], $this->version, true );
+				wp_script_add_data( 'wpcc-react-js', 'type', 'module' );
 				wp_localize_script( 'wpcc-react-js', 'wpCardanoConnect', [
 					'nonce' => wp_create_nonce( 'wp_rest' ),
 				] );
@@ -71,6 +73,17 @@ class Assets extends Base {
 				wp_enqueue_style( 'wpcc-react-css', $this->react_cdn . $entrypoint, [], $this->version );
 			}
 		}
+	}
+
+	/**
+	 * Vite builds ES modules; ensure WordPress outputs type="module" on WP < 6.3.
+	 */
+	public function addModuleTypeToReactScript( string $tag, string $handle, string $src ): string {
+		if ( 'wpcc-react-js' !== $handle || str_contains( $tag, 'type=' ) ) {
+			return $tag;
+		}
+
+		return str_replace( '<script ', '<script type="module" ', $tag );
 	}
 
 	/**

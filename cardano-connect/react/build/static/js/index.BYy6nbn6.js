@@ -25,27 +25,6 @@ var require_stdin = __commonJS2({
           value: "Module"
         }));
       }
-      (function() {
-        const a = document.createElement("link").relList;
-        if (a && a.supports && a.supports("modulepreload")) return;
-        for (const g of document.querySelectorAll('link[rel="modulepreload"]')) f(g);
-        new MutationObserver((g) => {
-          for (const v of g) if (v.type === "childList") for (const z of v.addedNodes) z.tagName === "LINK" && z.rel === "modulepreload" && f(z);
-        }).observe(document, {
-          childList: true,
-          subtree: true
-        });
-        function s(g) {
-          const v = {};
-          return g.integrity && (v.integrity = g.integrity), g.referrerPolicy && (v.referrerPolicy = g.referrerPolicy), g.crossOrigin === "use-credentials" ? v.credentials = "include" : g.crossOrigin === "anonymous" ? v.credentials = "omit" : v.credentials = "same-origin", v;
-        }
-        function f(g) {
-          if (g.ep) return;
-          g.ep = true;
-          const v = s(g);
-          fetch(g.href, v);
-        }
-      })();
       var commonjsGlobal = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
       function getDefaultExportFromCjs$1(o) {
         return o && o.__esModule && Object.prototype.hasOwnProperty.call(o, "default") ? o.default : o;

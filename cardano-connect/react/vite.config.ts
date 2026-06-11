@@ -35,7 +35,12 @@ export default defineConfig({
 		emptyOutDir: true,
 		manifest: true,
 		rollupOptions: {
+			input: path.resolve(
+				path.dirname( fileURLToPath( import.meta.url ) ),
+				'src/index.tsx',
+			),
 			output: {
+				inlineDynamicImports: true,
 				entryFileNames: 'static/js/[name].[hash].js',
 				chunkFileNames: 'static/js/[name].[hash].js',
 				assetFileNames: ( assetInfo ) => {
