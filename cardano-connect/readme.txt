@@ -35,10 +35,17 @@ screen directly.
 * Fix options loading to merge field defaults instead of array index fallbacks.
 * Add skippable setup wizard on the main plugin dashboard for new installations.
 * Add conditional frontend asset loading when blocks or shortcodes are present.
+* Fix frontend asset loading from theme sidebars and ACF meta fields.
+* Handle missing browser wallet extensions with readable empty states and download links.
+* Fix balance empty-state text readability on themed sites.
+* Migrate React frontend from Create React App to Vite.
+* Upgrade blocks toolchain to @wordpress/scripts 32.x.
+* Pin Mesh SDK transitive dependencies with npm overrides.
 * Harden REST connect/disconnect endpoints with nonce validation and rate limiting.
 * Add WPCC_VERIFY_ENDPOINT constant and wpcc_verify_endpoint filter for signature verification URL.
 * Add wpcc_load_options filter for multilingual label overrides.
 * Load plugin text domain for admin and settings translations.
+* Update plugin guide URL for Upstream documentation.
 
 = 0.1.0 =
 * Initial release
