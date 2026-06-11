@@ -100,19 +100,31 @@ export const CompareModal = () => {
     const getPoolStats = useCallback(async () => {
         setLoading(true)
         setAllPoolStats(null)
-        const data = await backendGetPoolsStats({
-            nonce: wpCardanoConnect?.nonce,
-            filters: comparePoolFilters
-        })
-        if (data.success) {
-            setAllPoolStats(data.data.items)
-        } else {
+        setViews(null)
+        try {
+            const data = await backendGetPoolsStats({
+                nonce: wpCardanoConnect?.nonce,
+                filters: comparePoolFilters
+            })
+            if (data.success) {
+                setAllPoolStats(data.data.items)
+            } else {
+                setAllPoolStats([])
+                dispatch(setMessage({
+                    message: translateError(data.message),
+                    type: 'error'
+                }))
+            }
+        } catch (e: any) {
+            setAllPoolStats([])
             dispatch(setMessage({
-                message: translateError(data.message),
+                message: translateError(e?.message || 'Failed to load pool data'),
                 type: 'error'
             }))
+        } finally {
+            setLoading(false)
         }
-    }, [comparePoolFilters])
+    }, [comparePoolFilters, dispatch])
 
     // Action handlers
 
@@ -142,7 +154,7 @@ export const CompareModal = () => {
     // Load view data after fetching data
 
     useEffect(() => {
-        if (loading || !allPoolStats) {
+        if (compareModal !== 'pools' || loading || allPoolStats === null) {
             return
         }
         const axisX = {
@@ -330,21 +342,36 @@ export const CompareModal = () => {
         }
         setViews(viewConfig)
         setLoading(false)
-    }, [loading, comparePools, allPoolStats]);
+    }, [compareModal, loading, comparePools, allPoolStats]);
 
-    // Load data on mount.
+    const blockView = {
+        enabled: true,
+        key: 'block',
+        type: 'block',
+        icon: 'grid',
+        title: 'Favourite pools',
+        descriptionShort: 'Your favourite pools',
+    }
+
+    // Load data when the modal opens.
 
     useEffect(() => {
         if (compareModal === 'pools') {
-            getPoolStats().then(() => setLoading(false))
+            getPoolStats()
+        } else if (compareModal === 'dreps') {
+            setLoading(false)
+            setAllPoolStats(null)
+            setViews([blockView])
+            setSelectedView(blockView)
+        } else {
+            setLoading(false)
         }
+
         if (compareModal) {
             document.body.classList.add('wpcc-modal-open');
         } else {
             document.body.classList.remove('wpcc-modal-open');
         }
-
-        // Set dimensions and respond to window resize
 
         setContainerWidth(Math.max(window.innerWidth - 72, minWidth))
         setContainerHeight(Math.max(window.innerHeight - 212, minHeight))
@@ -359,19 +386,42 @@ export const CompareModal = () => {
         }
     }, [compareModal, getPoolStats, minWidth, minHeight]);
 
+    // Close modal if compare list becomes empty.
+
+    useEffect(() => {
+        if (compareModal === 'pools' && !comparePools?.length) {
+            handleClose()
+        }
+        if (compareModal === 'dreps' && !compareDreps?.length) {
+            handleClose()
+        }
+    }, [compareModal, comparePools?.length, compareDreps?.length]);
+
+    const poolCompareCount = comparePools?.length ?? 0
+    const drepCompareCount = compareDreps?.length ?? 0
+    const hasCompareItems = poolCompareCount > 0 || drepCompareCount > 0
+
+    if (!hasCompareItems) {
+        return null
+    }
+
     return (
         <>
             <div className={classMap.compareButtonContainer}>
-                <button
-                    className={classMap.compareButton}
-                    onClick={() => dispatch(setCompareModal('pools'))}>
-                    {options.label_compare_view_pools}
-                </button>
-                {compareDreps?.length ? <button
-                    className={classMap.compareButton}
-                    onClick={() => dispatch(setCompareModal('dreps'))}>
-                    {options.label_compare_view_dreps} ({compareDreps.length})
-                </button> : null}
+                {poolCompareCount > 0 ? (
+                    <button
+                        className={classMap.compareButton}
+                        onClick={() => dispatch(setCompareModal('pools'))}>
+                        {options.label_compare_view_pools} ({poolCompareCount})
+                    </button>
+                ) : null}
+                {drepCompareCount > 0 ? (
+                    <button
+                        className={classMap.compareButton}
+                        onClick={() => dispatch(setCompareModal('dreps'))}>
+                        {options.label_compare_view_dreps} ({drepCompareCount})
+                    </button>
+                ) : null}
             </div>
             {compareModal ? (
                 <div className={classMap.modal}>

@@ -14,6 +14,7 @@ class Plugin extends Base {
 	 */
 	public function registerModules(): void {
 		( new Settings() )->run();
+		( new SetupWizard() )->run();
 		( new Assets() )->run();
 		( new Api() )->run();
 		if ( is_admin() ) {
@@ -34,6 +35,7 @@ class Plugin extends Base {
 		add_shortcode( 'cardano-connect-dreps', [ $this, 'registerDRepsShortcode' ] );
 		add_action( 'init', [ $this, 'registerModules' ] );
 		add_action( 'init', [ $this, 'registerCron' ] );
+		add_action( 'plugins_loaded', [ $this, 'maybeUpgrade' ] );
 
 		// WP event triggering the fetch batch process.
 		add_action( 'cardano_connect_cron_fetch_data', [ $this, 'cronFetchDataBatch' ] );
@@ -128,6 +130,10 @@ class Plugin extends Base {
 	 * Include the assets shortcode template.
 	 */
 	public function registerAssetsShortcode( $attributes = [] ): string {
+		$attributes['whitelist'] = isset( $attributes['whitelist'] )
+			? str_replace( ',', "\n", $attributes['whitelist'] )
+			: null;
+
 		return $this->registerBlockShortcode( 'assets', $attributes );
 	}
 
@@ -144,7 +150,7 @@ class Plugin extends Base {
 	public function registerPoolsShortcode( $attributes = [] ): string {
 		$attributes['whitelist'] = isset( $attributes['whitelist'] )
 			? str_replace( ',', "\n", $attributes['whitelist'] )
-			: [];
+			: null;
 
 		return $this->registerBlockShortcode( 'pools', $attributes );
 	}
@@ -155,7 +161,7 @@ class Plugin extends Base {
 	public function registerDRepsShortcode( $attributes = [] ): string {
 		$attributes['whitelist'] = isset( $attributes['whitelist'] )
 			? str_replace( ',', "\n", $attributes['whitelist'] )
-			: [];
+			: null;
 
 		return $this->registerBlockShortcode( 'dreps', $attributes );
 	}
@@ -164,8 +170,9 @@ class Plugin extends Base {
 	 * Register plugin post types.
 	 */
 	public function registerPostTypes(): void {
-		$stake_pool     = new StakePool();
-		$testnet_suffix = $this->getSetting( Base::SETTING_PREFIX . 'mainnet_active' ? '' : '_testnet' );
+		$stake_pool       = new StakePool();
+		$mainnet_active   = $this->getSetting( Base::SETTING_PREFIX . 'mainnet_active' );
+		$testnet_suffix   = $mainnet_active ? '' : '_testnet';
 		if ( $this->getSetting( Base::SETTING_PREFIX . 'pools_data_source' . $testnet_suffix ) === 'local_wp' ) {
 			register_post_type(
 				$stake_pool::NAME,
@@ -181,20 +188,60 @@ class Plugin extends Base {
 	 * @return void
 	 */
 	public function onActivate(): void {
-		// Set WP options
+		$this->settings = $this->loadSettings();
+
 		foreach ( $this->settings as $setting ) {
-			$settings_fields = array_column(
-				$setting['sections'],
-				'fields'
-			)[0];
-			$defaults        = [];
-			foreach ( $settings_fields as $name => $settings_field ) {
-				if ( isset( $settings_field['default'] ) ) {
-					$defaults[ $name ] = $settings_field['default'];
+			$defaults = [];
+			foreach ( $setting['sections'] as $section ) {
+				foreach ( $section['fields'] as $name => $settings_field ) {
+					if ( isset( $settings_field['default'] ) ) {
+						$defaults[ $name ] = $settings_field['default'];
+					}
 				}
 			}
 			add_option( $setting['name'], $defaults );
 		}
+
+		update_option( 'wpcc_db_version', WPCC_VERSION );
+		delete_option( SetupWizard::OPTION_COMPLETED );
+	}
+
+	/**
+	 * Remove deprecated option keys on upgrade without overwriting user values.
+	 *
+	 * @return void
+	 */
+	public function maybeUpgrade(): void {
+		$installed = get_option( 'wpcc_db_version', '0' );
+
+		if ( version_compare( $installed, WPCC_VERSION, '>=' ) ) {
+			return;
+		}
+
+		if ( empty( Base::DEPRECATED_SETTING_KEYS ) ) {
+			update_option( 'wpcc_db_version', WPCC_VERSION );
+
+			return;
+		}
+
+		$this->settings = $this->loadSettings();
+
+		foreach ( $this->settings as $setting ) {
+			$option_name = $setting['name'];
+			$values      = get_option( $option_name );
+
+			if ( ! is_array( $values ) ) {
+				continue;
+			}
+
+			foreach ( Base::DEPRECATED_SETTING_KEYS as $deprecated_key ) {
+				unset( $values[ $deprecated_key ] );
+			}
+
+			update_option( $option_name, $values );
+		}
+
+		update_option( 'wpcc_db_version', WPCC_VERSION );
 	}
 
 	/**

@@ -1,76 +1,7 @@
 /*!**********************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./pools/src/editor.scss ***!
   \**********************************************************************************************************************************************************************************************************************************************/
-.wp-block-cardano-connect-pools .pools-placeholder {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  width: 100%;
-  font-size: small;
-}
-.wp-block-cardano-connect-pools .pools-placeholder .pool-placeholder {
-  background-color: #ededed;
-  border-radius: 4px;
-  padding: 8px;
-  width: 100%;
-}
-.wp-block-cardano-connect-pools .pools-placeholder .pool-placeholder .pool-placeholder-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-.wp-block-cardano-connect-pools .pools-placeholder .pool-placeholder .pool-placeholder-head .pool-placeholder-image {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-}
-.wp-block-cardano-connect-pools .pools-placeholder .pool-placeholder .pool-placeholder-head .pool-placeholder-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: inline-block;
-  white-space: nowrap;
-  max-width: 180px;
-}
-.wp-block-cardano-connect-pools .pools-placeholder .pool-placeholder .pool-placeholder-blocks {
-  display: flex;
-  gap: 4px;
-  width: 100%;
-}
-.wp-block-cardano-connect-pools .pools-placeholder .pool-placeholder .pool-placeholder-blocks > span {
-  background-color: white;
-  padding: 8px;
-  border-radius: 4px;
-  min-height: 40px;
-  width: 100%;
-}
-.wp-block-cardano-connect-pools .pools-placeholder.pools-grid {
-  grid-template-columns: 1fr 1fr;
-}
-.wp-block-cardano-connect-pools .pools-placeholder.pools-grid .pool-placeholder {
-  flex: 1 1;
-  min-width: 40%;
-}
-.wp-block-cardano-connect-pools .pools-placeholder.pools-grid .pool-placeholder .pool-placeholder-head {
-  margin-bottom: 8px;
-}
-.wp-block-cardano-connect-pools .pools-placeholder.pools-mini {
-  grid-template-columns: 1fr 1fr;
-}
-.wp-block-cardano-connect-pools .pools-placeholder.pools-mini .pool-placeholder {
-  flex: 1 1;
-  min-width: 40%;
-}
-.wp-block-cardano-connect-pools .pools-placeholder.pools-mini .pool-placeholder .pool-placeholder-head {
-  margin-bottom: 8px;
-}
-.wp-block-cardano-connect-pools .pools-placeholder.pools-mini .pool-placeholder .pool-placeholder-blocks > span {
-  min-height: 10px;
-}
+
 /*!*******************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./shared/editor.scss ***!
   \*******************************************************************************************************************************************************************************************************************************************/
@@ -81,6 +12,7 @@
   /* Block Control Container */
   /* Pagination */
   /* Gated Content */
+  /* Placeholder */
   /* Utilities */
 }
 [class*=wp-block-cardano-connect-] .wpcc-block-control .wpcc-block-title {
@@ -149,6 +81,76 @@
 }
 [class*=wp-block-cardano-connect-] .wpcc-gated.locked .wpcc-gated-lock {
   background-image: var(--wpcc-locked-icon);
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+  font-size: small;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper .wpcc-placeholder {
+  background-color: #ededed;
+  border-radius: 4px;
+  padding: 8px;
+  width: 100%;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper .wpcc-placeholder .wpcc-placeholder-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper .wpcc-placeholder .wpcc-placeholder-head .wpcc-placeholder-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper .wpcc-placeholder .wpcc-placeholder-head .wpcc-placeholder-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  white-space: nowrap;
+  max-width: 180px;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper .wpcc-placeholder .wpcc-placeholder-blocks {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper .wpcc-placeholder .wpcc-placeholder-blocks > span {
+  background-color: white;
+  padding: 8px;
+  border-radius: 4px;
+  min-height: 40px;
+  width: 100%;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper.wpcc-grid {
+  grid-template-columns: 1fr 1fr;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper.wpcc-grid .wpcc-placeholder {
+  flex: 1 1;
+  min-width: 40%;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper.wpcc-grid .wpcc-placeholder .wpcc-placeholder-head {
+  margin-bottom: 8px;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper.wpcc-mini {
+  grid-template-columns: 1fr 1fr;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper.wpcc-mini .wpcc-placeholder {
+  flex: 1 1;
+  min-width: 40%;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper.wpcc-mini .wpcc-placeholder .wpcc-placeholder-head {
+  margin-bottom: 8px;
+}
+[class*=wp-block-cardano-connect-] .wpcc-placeholder-wrapper.wpcc-mini .wpcc-placeholder .wpcc-placeholder-blocks > span {
+  min-height: 10px;
 }
 [class*=wp-block-cardano-connect-] .hidden {
   display: none !important;

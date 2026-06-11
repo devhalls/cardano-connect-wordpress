@@ -132,7 +132,16 @@ class Settings extends Base {
 	 * @return void
 	 */
 	public function dashboardOutput(): void {
-		$this->getTemplate( 'page/dashboard', [], true );
+		$wizard = new SetupWizard();
+		$this->getTemplate(
+			'page/dashboard',
+			[
+				'wizard'      => $wizard,
+				'show_wizard' => $wizard->shouldShow(),
+				'wizard_step' => $wizard->getCurrentStep(),
+			],
+			true
+		);
 	}
 
 	/**

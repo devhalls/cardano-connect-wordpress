@@ -4,10 +4,8 @@
  * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-i18n/
  */
 import { __ } from '@wordpress/i18n';
-import {CheckboxControl, RadioControl, SelectControl, TextareaControl} from '@wordpress/components';
+import { RadioControl, TextareaControl} from '@wordpress/components';
 import { __experimentalNumberControl as NumberControl } from "@wordpress/components";
-import { useEffect, useState } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * React hook that is used to mark the block wrapper element.
@@ -54,6 +52,8 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
 	 */
 	const gateOptions = [
 		{label: __('No condition, always show content'), value: 'none'},
+		{label: __('Match all'), value: 'all'},
+		{label: __('Match any'), value: 'any'},
 	]
 
 	/**
@@ -63,20 +63,20 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
 	 * @return {JSX.Element}
 	 */
 	const renderPlaceholder = (id, view) => (
-		<div key={id} className={`pool-placeholder`}>
-			<div className={'pool-placeholder-head'}>
-				<div className={'pool-placeholder-image'}></div>
-				<div className={'pool-placeholder-title'}>{id}</div>
+		<div key={id} className={`wpcc-placeholder`}>
+			<div className={'wpcc-placeholder-head'}>
+				<div className={'wpcc-placeholder-image'}></div>
+				<div className={'wpcc-placeholder-title'}>{id}</div>
 			</div>
 			{view === 'grid' && (
-				<div className={'pool-placeholder-blocks'}>
+				<div className={'wpcc-placeholder-blocks'}>
 					<span></span>
 					<span></span>
 					<span></span>
 				</div>
 			)}
 			{view === 'mini' && (
-				<div className={'pool-placeholder-blocks'}>
+				<div className={'wpcc-placeholder-blocks'}>
 					<span></span>
 				</div>
 			)}
@@ -133,7 +133,7 @@ export default function Edit({ attributes, setAttributes, isSelected }) {
 							{(!attributes.per_page && attributes.per_page !==0) || (attributes.per_page > 0) ? (
 								<Pagination per_page={attributes.per_page} />
 							) : null}
-							<div className={`pools-placeholder pools-${attributes.view || 'grid'}`}>
+							<div className={`wpcc-placeholder-wrapper wpcc-${attributes.view || 'grid'}`}>
 								{attributes.whitelist?.length > 0
 									? attributes.whitelist.split('\n').map(id => renderPlaceholder(id, attributes.view || 'grid'))
 									: (

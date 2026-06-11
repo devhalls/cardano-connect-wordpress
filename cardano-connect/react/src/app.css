@@ -840,7 +840,6 @@
     }
     .wpcc-pool:not(tr) {
         width: calc(50% - calc(var(--wpcc-base-sizing) / 2));
-        flex: 1 1;
     }
 }
 

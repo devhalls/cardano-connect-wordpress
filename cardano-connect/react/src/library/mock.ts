@@ -15,7 +15,7 @@ export const mockOption: AjaxResponse<Options> = {
         assets_whitelist: null,
         assets_ipfs_endpoint: 'https://ipfs.io/ipfs/',
         assets_placeholder: 'https://upstream.org.uk/wp-content/plugins/cardano-connect/assets/logo-dark.svg',
-        label_connect: 'Cardano Connect',
+        label_connect: 'Connect Wallet',
         label_connect_cancel: 'Cancel',
         label_connected: 'Connected',
         label_disconnect: 'Disconnect',

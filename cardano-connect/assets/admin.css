@@ -138,9 +138,51 @@
 /** Elements **/
 .wpcc-code {
     display: block;
-    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    margin: 0 0 8px;
     word-break: break-all;
-    line-height: 1.1;
+    line-height: 1.4;
+    text-align: left;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+    background: #f0f0f1;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    color: #1d2327;
+}
+
+button.wpcc-code-copy {
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+button.wpcc-code-copy:hover {
+    background: #e7e7e9;
+    border-color: #c3c4c7;
+}
+
+button.wpcc-code-copy.is-copied {
+    background: #edfaef;
+    border-color: #00a32a;
+    color: #1e4620;
+}
+
+.wpcc-inline-separator {
+    margin: 0 6px;
+    color: #a7aaad;
+}
+
+.wpcc-section-footer {
+    margin-top: 24px;
+    margin-bottom: 0;
+}
+
+.wpcc-notice-banner {
+    width: 100%;
+    margin-bottom: 24px;
+    box-sizing: border-box;
 }
 .wpcc-pre {
     margin: 0;
@@ -205,3 +247,81 @@
     text-overflow: ellipsis;
 }
 
+/** Setup wizard **/
+.wpcc-wizard {
+    max-width: 860px;
+    animation: wpcc-wizard-enter 0.45s ease-out both;
+}
+
+@keyframes wpcc-wizard-enter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wpcc-wizard-progress {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.wpcc-wizard-progress__segment {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: #dcdcde;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.35s ease;
+}
+
+.wpcc-wizard-progress__segment.is-complete {
+    background: #009966;
+}
+
+.wpcc-wizard-progress__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.wpcc-wizard-form {
+    animation: wpcc-wizard-step-in 0.35s ease-out both;
+}
+
+@keyframes wpcc-wizard-step-in {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.wpcc-wizard-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #dcdcde;
+}
+
+.wpcc-wizard-skip {
+    margin-left: auto;
+    color: #646970;
+    text-decoration: none;
+}
+
+.wpcc-wizard-skip:hover {
+    color: #2271b1;
+}

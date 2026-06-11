@@ -330,6 +330,10 @@ declare interface ComponentAssets {
     hideTitles?: boolean
     notFound?: string
     whitelist?: string
+    gated?: string
+    gatedPlaceholder?: string
+    gate?: string
+    gateHideComponent?: boolean
 }
 declare interface ComponentAsset {
     asset: ApiAsset

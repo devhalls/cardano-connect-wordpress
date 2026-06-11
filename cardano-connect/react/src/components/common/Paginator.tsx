@@ -197,7 +197,7 @@ export const Paginator = ({
                         </thead>
                         <tbody>
                             {loading
-                                ? <Loader/>
+                                ? <tr><td colSpan={12}><Loader/></td></tr>
                                 : items?.length
                                     ? items.map((item, i) => renderer(item, i, viewMode))
                                     : <tr className={classMap.notFound}><td>{notFound || options.label_no_assets}</td></tr>

@@ -41,9 +41,9 @@ export const Balance = ({
     }, [user.connected, balances]);
 
     return (
-        <div className={`${classMap.balanceContainer} ${className}`}>
-            {!gated || (gated && !gateHideComponent) ? (
-                <>
+        <>
+            {user.connected && (!gated || (gated && !gateHideComponent)) ? (
+                <div className={`${classMap.balanceContainer} ${className}`}>
                     {loading ? (
                         <Loader />
                     ) : (
@@ -94,9 +94,9 @@ export const Balance = ({
                             ) : null }
                         </>
                     )}
-                </>
+                </div>
             ) : null }
             {gated ? <Gated gated={gated} gatedPlaceholder={gatedPlaceholder} gate={gate}/> : null}
-        </div>
+        </>
     )
 }

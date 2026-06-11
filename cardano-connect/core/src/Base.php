@@ -231,7 +231,7 @@ abstract class Base {
 	 * @return void
 	 */
 	public function __construct() {
-		$this->version       = '0.1.0';
+		$this->version       = defined( 'WPCC_VERSION' ) ? WPCC_VERSION : '1.1.0';
 		$this->plugin_name   = 'cardano-connect';
 		$this->plugin_path   = plugin_dir_path( __DIR__ . '/../../..' );
 		$this->plugin_url    = plugin_dir_url( __DIR__ . '/../../..' );
@@ -246,30 +246,106 @@ abstract class Base {
 	abstract public function run();
 
 	/**
+	 * Option keys removed on upgrade without touching user-configured values.
+	 *
+	 * @var string[]
+	 */
+	public const DEPRECATED_SETTING_KEYS = [];
+
+	/**
+	 * Returns default values from the settings field definitions.
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected function getDefaultSettings(): array {
+		if ( ! $this->settings ) {
+			$this->settings = $this->loadSettings();
+		}
+
+		$defaults = [];
+		foreach ( $this->settings as $setting ) {
+			foreach ( $setting['sections'] as $section ) {
+				foreach ( $section['fields'] as $name => $field ) {
+					if ( isset( $field['default'] ) ) {
+						$defaults[ $name ] = $field['default'];
+					}
+				}
+			}
+		}
+
+		return $defaults;
+	}
+
+	/**
+	 * Returns values stored in wp_options only (no defaults merged).
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected function getStoredSettings(): array {
+		if ( ! $this->settings ) {
+			$this->settings = $this->loadSettings();
+		}
+
+		$stored = [];
+		foreach ( $this->settings as $settings ) {
+			$stored = array_merge( $stored, get_option( $settings['name'] ) ?: [] );
+		}
+
+		return $stored;
+	}
+
+	/**
 	 * Returns the WP Cardano Connect plugin options for the UI.
 	 * Loads data from WPCCSettings and formats to array with new keys ready for UI consumption.
 	 */
 	protected function loadOptions(): array {
-		$ui_options         = array_merge( array_flip( self::OPTION_FIELDS_NAMES ), [
+		$ui_options = array_merge(
+			array_fill_keys( self::OPTION_FIELDS_NAMES, null ),
+			[
 				'version'     => $this->version,
 				'plugin_name' => $this->plugin_name,
 				'gates'       => [
 					[
 						'label' => __( 'No condition, always show content', 'cardano-connect' ),
-						'value' => 'none'
+						'value' => 'none',
 					],
-				]
+					[
+						'label' => __( 'Match all', 'cardano-connect' ),
+						'value' => 'all',
+					],
+					[
+						'label' => __( 'Match any', 'cardano-connect' ),
+						'value' => 'any',
+					],
+				],
 			]
 		);
-		$configured_options = $this->getSetting();
+
+		$configured_options = array_merge( $this->getDefaultSettings(), $this->getStoredSettings() );
 		foreach ( $configured_options as $name => $val ) {
 			$ui_name = str_replace( self::SETTING_PREFIX, '', $name );
-			if ( array_key_exists( $ui_name, $ui_options ) ) {
+			if ( array_key_exists( $ui_name, $ui_options ) && null !== $val && '' !== $val ) {
 				$ui_options[ $ui_name ] = $val;
 			}
 		}
 
-		return $ui_options;
+		foreach ( $this->getDefaultSettings() as $name => $val ) {
+			$ui_name = str_replace( self::SETTING_PREFIX, '', $name );
+			if (
+				array_key_exists( $ui_name, $ui_options ) &&
+				( null === $ui_options[ $ui_name ] || '' === $ui_options[ $ui_name ] )
+			) {
+				$ui_options[ $ui_name ] = $val;
+			}
+		}
+
+		/**
+		 * Filter UI options before they are sent to the frontend.
+		 * Use for multilingual label overrides.
+		 *
+		 * @param array<string, mixed> $ui_options
+		 */
+		return apply_filters( 'wpcc_load_options', $ui_options );
 	}
 
 	/**
@@ -284,12 +360,10 @@ abstract class Base {
 	protected function getSetting( string $field_key = 'all' ): mixed {
 		if ( ! $this->settings ) {
 			$this->settings = $this->loadSettings();
-			$this->options  = $this->loadOptions();
 		}
-		$all_options = [];
-		foreach ( $this->settings as $settings ) {
-			$all_options += get_option( $settings['name'] ) ?: [];
-		}
+
+		$all_options = array_merge( $this->getDefaultSettings(), $this->getStoredSettings() );
+
 		if ( $field_key === 'all' ) {
 			return $all_options;
 		}
@@ -520,7 +594,7 @@ abstract class Base {
 								]
 							],
 							self::SETTING_PREFIX . 'label_connect'                          => [
-								'default' => __( 'Cardano Connect', 'cardano-connect' ),
+								'default' => __( 'Connect Wallet', 'cardano-connect' ),
 								'label'   => __( 'Connect button', 'cardano-connect' ),
 								'type'    => 'text',
 								'rules'   => [
@@ -1229,11 +1303,12 @@ abstract class Base {
 	 * Return the data signer class.
 	 */
 	protected function loadSigner(): ConnectBase {
-		$mainnet_active = $this->getSetting( self::SETTING_PREFIX . 'mainnet_active' );
-		$testnet_suffix = $mainnet_active ? '' : '_testnet';
-		$endpoint       = $this->getSetting( self::SETTING_PREFIX . 'endpoint' . $testnet_suffix );
+		$endpoint = apply_filters(
+			'wpcc_verify_endpoint',
+			WPCC_VERIFY_ENDPOINT
+		);
 
-		return new Upstream( $endpoint || '' );
+		return new Upstream( $endpoint ?: '' );
 	}
 
 	/**

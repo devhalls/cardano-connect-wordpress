@@ -227,5 +227,7 @@ export const PoolList = ({
                 <Tooltip id={`pool-tooltip-${poolId}`}/>
             </td>
         </tr>
-    ) : null
+    ) : <tr>
+        <td colSpan={12}><Loader /></td>
+    </tr>
 }

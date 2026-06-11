@@ -79,7 +79,7 @@ export async function backendConnect(data: {
 
 export async function backendDisconnect(nonce: string): Promise<AjaxResponse<null>> {
     instance.defaults.headers.common['X-WP-Nonce'] = nonce
-    return await get(`disconnect`);
+    return await post(`disconnect`);
 }
 
 export async function backendGetAsset(data: {

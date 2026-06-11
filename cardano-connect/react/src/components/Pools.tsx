@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, {useCallback, useEffect} from "react";
 import {classMap, filterPaginatedRange} from "../library/utils";
 import {backendGetPools} from "../library";
 import {Paginator} from "./common/Paginator";
@@ -28,29 +28,6 @@ export const Pools = ({
     const user: UserState = useAppSelector(getUserState)
     const options: OptionState = useAppSelector(getOptionState)
     const { connect, connected} = useWallet()
-
-    // Function to fetch the list of pools.
-
-    const getPools = async (page: number, perPage: number, filters?: Filter[]|null) => {
-        if (whitelist) {
-            const poolIds = whitelist?.length ? whitelist.split('\n').map(a => a.trim()) : []
-            const formatted: Pool[] = poolIds.map(p => {
-                return {pool_id: p}
-            })
-            return {
-                total: formatted.length,
-                items: filterPaginatedRange(formatted, page, perPage)
-            }
-        }
-        const data = await backendGetPools({
-            nonce: wpCardanoConnect?.nonce,
-            page,
-            perPage,
-            filters
-        })
-        return data.data
-    }
-
     const filters: Filter[] = [
         {
             placeholder: options.label_paginate_search_text_placeholder,
@@ -113,6 +90,55 @@ export const Pools = ({
         },
     ]
 
+    // Function to fetch the list of pools.
+
+    const getPools = async (page: number, perPage: number, filters?: Filter[]|null) => {
+        if (whitelist) {
+            const poolIds = whitelist?.length ? whitelist.split('\n').map(a => a.trim()) : []
+            const formatted: Pool[] = poolIds.map(p => {
+                return {pool_id: p}
+            })
+            return {
+                total: formatted.length,
+                items: filterPaginatedRange(formatted, page, perPage)
+            }
+        }
+        const data = await backendGetPools({
+            nonce: wpCardanoConnect?.nonce,
+            page,
+            perPage,
+            filters
+        })
+        return data.data
+    }
+
+    // Function to render pools.
+
+    const renderPool = useCallback((i: number, p: Pool, viewMode: "list") => (
+        <React.Fragment key={p.pool_id}>
+            {viewMode === 'list' ?
+                <PoolListComponent
+                    poolId={p.pool_id}
+                    index={i}
+                />
+                : viewMode === 'grid' ?
+                    <>
+                        {view === 'mini' ? (
+                            <PoolMiniComponent
+                                poolId={p.pool_id}
+                                index={i}
+                            />
+                        ) : (
+                            <PoolComponent
+                                poolId={p.pool_id}
+                                index={i}
+                            />
+                        )}
+                    </>
+                    : null}
+        </React.Fragment>
+    ), [view])
+
     // Connect mesh provider if not already connected.
 
     useEffect(() => {
@@ -159,30 +185,7 @@ export const Pools = ({
                     notFound={notFound || options.label_no_pools}
                     defaultFilters={filters}
                     defaultView={view === 'list' ? 'list' : 'grid'}
-                    renderer={(p: Pool, i, viewMode) =>
-                        <React.Fragment key={p.pool_id}>
-                            {viewMode === 'list' ?
-                                <PoolListComponent
-                                    poolId={p.pool_id}
-                                    index={i}
-                                />
-                                : viewMode === 'grid' ?
-                                    <>
-                                        {view === 'mini' ? (
-                                            <PoolMiniComponent
-                                                poolId={p.pool_id}
-                                                index={i}
-                                            />
-                                        ) : (
-                                            <PoolComponent
-                                                poolId={p.pool_id}
-                                                index={i}
-                                            />
-                                        )}
-                                    </>
-                                    : null}
-                        </React.Fragment>
-                    }
+                    renderer={(p: Pool, i, viewMode) => renderPool(i, p, viewMode)}
                 />
             ) : null }
             {gated ? <Gated gated={gated} gatedPlaceholder={gatedPlaceholder} gate={gate}/> : null}

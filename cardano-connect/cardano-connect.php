@@ -6,7 +6,7 @@
  * Description: Cardano blockchain wallet login and data indexing for your WordPress website, supporting all major CIP-30 complaint wallets. Bring the web3 world to your website and give gated content access to your web3 users, all using the default WordPress users and roles.
  * Requires at least: 6.1
  * Requires PHP: 8.0
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: PendulumDev
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -38,6 +38,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! defined( 'WPCC_VERSION' ) ) {
+	define( 'WPCC_VERSION', '1.1.0' );
+}
+
+if ( ! defined( 'WPCC_VERIFY_ENDPOINT' ) ) {
+	define( 'WPCC_VERIFY_ENDPOINT', 'https://cardano-connect-verify.vercel.app/' );
+}
+
+if ( ! defined( 'WPCC_DISABLE_SETUP_WIZARD' ) ) {
+	define( 'WPCC_DISABLE_SETUP_WIZARD', false );
+}
+
 /**
  * Bootstrap the plugin.
  */
@@ -46,6 +58,17 @@ if ( ! class_exists( Plugin::class ) ) {
 	define( 'WPCC_DIR', __DIR__ );
 	require 'core/vendor/autoload.php';
 	$plugin = new WPCC\Plugin();
+
+	add_action(
+		'init',
+		static function (): void {
+			load_plugin_textdomain(
+				'cardano-connect',
+				false,
+				dirname( plugin_basename( __FILE__ ) ) . '/languages'
+			);
+		}
+	);
 
 	/**
 	 * Plugin lifecycle hooks.
@@ -64,6 +87,8 @@ if ( ! class_exists( Plugin::class ) ) {
 		foreach ( WPCC\Base::SETTING_FIELD_NAMES as $setting ) {
 			delete_option( $setting );
 		}
+		delete_option( 'wpcc_db_version' );
+		delete_option( WPCC\SetupWizard::OPTION_COMPLETED );
 		wp_unschedule_hook( 'cardano_connect_cron_fetch_data' );
 		wp_unschedule_hook( 'cardano_connect_cron_fetch_data_batch' );
 	}

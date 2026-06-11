@@ -16,27 +16,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_i18n__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
-/* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
-/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./editor.scss */ "./pools/src/editor.scss");
-/* harmony import */ var _shared_editor_scss__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./../../shared/editor.scss */ "./shared/editor.scss");
-/* harmony import */ var _shared_components_Pagination__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../shared/components/Pagination */ "./shared/components/Pagination.jsx");
-/* harmony import */ var _shared_components_Gated__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../shared/components/Gated */ "./shared/components/Gated.jsx");
-/* harmony import */ var _shared_components_Title__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../shared/components/Title */ "./shared/components/Title.jsx");
-/* harmony import */ var _shared_components_form_GatedControl__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../shared/components/form/GatedControl */ "./shared/components/form/GatedControl.jsx");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/block-editor */ "@wordpress/block-editor");
+/* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./editor.scss */ "./pools/src/editor.scss");
+/* harmony import */ var _shared_editor_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./../../shared/editor.scss */ "./shared/editor.scss");
+/* harmony import */ var _shared_components_Pagination__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../shared/components/Pagination */ "./shared/components/Pagination.jsx");
+/* harmony import */ var _shared_components_Gated__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../shared/components/Gated */ "./shared/components/Gated.jsx");
+/* harmony import */ var _shared_components_Title__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../shared/components/Title */ "./shared/components/Title.jsx");
+/* harmony import */ var _shared_components_form_GatedControl__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../shared/components/form/GatedControl */ "./shared/components/form/GatedControl.jsx");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__);
 /**
  * Retrieves the translation of text.
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-i18n/
  */
-
-
 
 
 
@@ -96,6 +90,12 @@ function Edit({
   const gateOptions = [{
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('No condition, always show content'),
     value: 'none'
+  }, {
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Match all'),
+    value: 'all'
+  }, {
+    label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Match any'),
+    value: 'any'
   }];
 
   /**
@@ -104,33 +104,33 @@ function Edit({
    * @param view
    * @return {JSX.Element}
    */
-  const renderPlaceholder = (id, view) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
-    className: `pool-placeholder`,
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
-      className: 'pool-placeholder-head',
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
-        className: 'pool-placeholder-image'
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
-        className: 'pool-placeholder-title',
+  const renderPlaceholder = (id, view) => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+    className: `wpcc-placeholder`,
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+      className: 'wpcc-placeholder-head',
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+        className: 'wpcc-placeholder-image'
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+        className: 'wpcc-placeholder-title',
         children: id
       })]
-    }), view === 'grid' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
-      className: 'pool-placeholder-blocks',
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("span", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("span", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("span", {})]
-    }), view === 'mini' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
-      className: 'pool-placeholder-blocks',
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("span", {})
+    }), view === 'grid' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+      className: 'wpcc-placeholder-blocks',
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {})]
+    }), view === 'mini' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+      className: 'wpcc-placeholder-blocks',
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {})
     })]
   }, id);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
-    ...(0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_4__.useBlockProps)(),
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+    ...(0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)(),
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
       className: `wpcc-block-control ${isSelected ? 'wpcc-block-control-edit' : ''}`,
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
         className: `${!isSelected ? 'hidden' : ''}`,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_shared_components_Title__WEBPACK_IMPORTED_MODULE_9__["default"], {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_shared_components_Title__WEBPACK_IMPORTED_MODULE_7__["default"], {
           title: 'Cardano Pool List'
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextareaControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextareaControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Whitelist Pool ID(s)'),
           help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('(Filter the list of pools by one or more pool ID(s). Enter one Pool ID per line)'),
@@ -138,7 +138,7 @@ function Edit({
           onChange: nextValue => setAttributes({
             whitelist: nextValue
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.__experimentalNumberControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.__experimentalNumberControl, {
           __next40pxDefaultSize: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Pools per page'),
           help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('(Set to 0 to disable pagination, max 100)'),
@@ -149,7 +149,7 @@ function Edit({
           onChange: nextValue => setAttributes({
             per_page: parseInt(nextValue)
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextareaControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextareaControl, {
           __nextHasNoMarginBottom: true,
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Not found text'),
           help: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('(Replaces default options not found text with a custom message for this block)'),
@@ -157,14 +157,14 @@ function Edit({
           onChange: nextValue => setAttributes({
             not_found: nextValue
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.RadioControl, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.RadioControl, {
           label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_0__.__)('Select pool view template'),
           selected: attributes.view || 'grid',
           onChange: value => setAttributes({
             view: value
           }),
           options: viewOptions
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_shared_components_form_GatedControl__WEBPACK_IMPORTED_MODULE_10__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_shared_components_form_GatedControl__WEBPACK_IMPORTED_MODULE_8__["default"], {
           gated: attributes.gated,
           gate_hide_component: attributes.gate_hide_component,
           gated_placeholder: attributes.gated_placeholder,
@@ -172,18 +172,18 @@ function Edit({
           gateOptions: gateOptions,
           setAttributes: setAttributes
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
         className: `${isSelected ? 'hidden' : ''}`,
-        children: [!attributes.gate_hide_component ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.Fragment, {
-          children: [!attributes.per_page && attributes.per_page !== 0 || attributes.per_page > 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_shared_components_Pagination__WEBPACK_IMPORTED_MODULE_7__["default"], {
+        children: [!attributes.gate_hide_component ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
+          children: [!attributes.per_page && attributes.per_page !== 0 || attributes.per_page > 0 ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_shared_components_Pagination__WEBPACK_IMPORTED_MODULE_5__["default"], {
             per_page: attributes.per_page
-          }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
-            className: `pools-placeholder pools-${attributes.view || 'grid'}`,
-            children: attributes.whitelist?.length > 0 ? attributes.whitelist.split('\n').map(id => renderPlaceholder(id, attributes.view || 'grid')) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.Fragment, {
+          }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+            className: `wpcc-placeholder-wrapper wpcc-${attributes.view || 'grid'}`,
+            children: attributes.whitelist?.length > 0 ? attributes.whitelist.split('\n').map(id => renderPlaceholder(id, attributes.view || 'grid')) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
               children: [renderPlaceholder('Placeholder pool 1', attributes.view || 'grid'), renderPlaceholder('Placeholder pool 2', attributes.view || 'grid'), renderPlaceholder('Placeholder pool 3', attributes.view || 'grid'), renderPlaceholder('Placeholder pool 4', attributes.view || 'grid')]
             })
           })]
-        }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_shared_components_Gated__WEBPACK_IMPORTED_MODULE_8__["default"], {
+        }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_shared_components_Gated__WEBPACK_IMPORTED_MODULE_6__["default"], {
           gateOptions: gateOptions,
           gated_placeholder: attributes.gated_placeholder,
           gated: attributes.gated,

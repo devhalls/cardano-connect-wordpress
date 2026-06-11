@@ -4,7 +4,7 @@ Donate link:       https://pendulumdev.co.uk/
 Tags:              Web3, Cardano, Wallet Connections, Token Gate
 Requires at least: 6.1
 Tested up to:      6.8
-Stable tag:        1.0.0
+Stable tag:        1.1.0
 Requires PHP:      8.0
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -13,7 +13,7 @@ Cardano blockchain wallet login and data indexing for your WordPress website. Br
 
 == Description ==
 
-Cardano Wallet login for your WordPress website, supporting all CIP-30 complaint wallets.
+Cardano Wallet login for your WordPress website, supporting all CIP-30 compliant wallets.
 
 Built using WordPress blocks, React and Mesh.js to bring you the latest wallet connection features for your WordPress
 users.
@@ -26,9 +26,19 @@ WordPress configured user settings allowing you to create gated content.
 1. Upload the plugin zip to the `/wp-content/plugins` directory, or install the plugin through the WordPress plugins
 screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Configure the plugin and enable Mainnet connection as soon as your happy with everything.
+3. Complete the setup wizard or configure the plugin under Cardano Connect → Settings.
 
 == Changelog ==
+
+= 1.1.0 =
+* Fix plugin activation not seeding default settings (connect button showed numeric labels on fresh installs).
+* Fix options loading to merge field defaults instead of array index fallbacks.
+* Add skippable setup wizard on the main plugin dashboard for new installations.
+* Add conditional frontend asset loading when blocks or shortcodes are present.
+* Harden REST connect/disconnect endpoints with nonce validation and rate limiting.
+* Add WPCC_VERIFY_ENDPOINT constant and wpcc_verify_endpoint filter for signature verification URL.
+* Add wpcc_load_options filter for multilingual label overrides.
+* Load plugin text domain for admin and settings translations.
 
 = 0.1.0 =
 * Initial release

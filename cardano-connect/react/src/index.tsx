@@ -33,7 +33,9 @@ function extractDataSet(dataset: { [s: string]: unknown; } | ArrayLike<unknown>)
     for (const [key, value] of Object.entries(dataset)) {
         if (value === "" || value === null) {
             dataAttrs[toCamelCase(key)] = undefined;
-        } else if (!isNaN(value) && value.trim() !== "") {
+        }
+        // @ts-ignore
+        else if (!isNaN(value) && value.trim() !== "") {
             // Convert numeric values automatically
             dataAttrs[toCamelCase(key)] = Number(value);
         } else {
@@ -103,30 +105,19 @@ for (let i = 0; i < poolElements.length; i++) {
     );
 }
 
-
+/**
+ * Construct the asset list elements.
+ */
 const assetsElements = document.getElementsByClassName('wp-block-cardano-connect-assets')
 for (let i = 0; i < assetsElements.length; i++) {
-    const assets = ReactDOM.createRoot(assetsElements[i])
-    const perPage: number = assetsElements[i].getAttribute('data-per_page')
-        ? parseInt(assetsElements[i].getAttribute('data-per_page'))
-        : undefined
-    const hideTitles: boolean = assetsElements[i].getAttribute('data-hide_titles')
-        ? !!assetsElements[i].getAttribute('data-hide_titles')
-        : undefined
-    const notFound: string = assetsElements[i].getAttribute('data-not_found')
-        ? assetsElements[i].getAttribute('data-not_found')
-        : undefined
-    assets.render(
+    const asset = ReactDOM.createRoot(assetsElements[i]);
+    const element = assetsElements[i] as HTMLElement
+    asset.render(
         <React.StrictMode>
             <MeshProvider>
                 <Provider store={state}>
                     <PersistGate persistor={persistor}>
-                        <Assets
-                            perPage={perPage}
-                            hideTitles={hideTitles}
-                            notFound={notFound}
-                            whitelist={assetsElements[i].getAttribute('data-whitelist')}
-                        />
+                        <Assets {...extractDataSet(element.dataset)} />
                     </PersistGate>
                 </Provider>
             </MeshProvider>
@@ -162,8 +153,9 @@ for (let i = 0; i < drepsElements.length; i++) {
 }
 
 /**
- * Create the global element a append it the dom automatically.
+ * Create the global element and append it to the dom automatically.
  */
+const hasPoolsOrDreps = poolElements.length > 0 || drepsElements.length > 0
 const globalElement = document.createElement('div')
 globalElement.id = 'wp-block-cardano-connect-global'
 document.body.appendChild(globalElement)
@@ -175,7 +167,7 @@ global.render(
                 <PersistGate persistor={persistor}>
                     <Message />
                     <AssetModal />
-                    <CompareModal />
+                    {hasPoolsOrDreps ? <CompareModal /> : null}
                 </PersistGate>
             </Provider>
         </MeshProvider>

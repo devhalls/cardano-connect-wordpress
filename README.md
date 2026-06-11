@@ -101,13 +101,30 @@ npm run start
 
 ## Deployment
 
-Deployments are handled via the WordPress plugin repository. PRs accepted in this repository will be submitted to 
-the WordPress repo by the contributor team.
+GitHub Releases publish `cardano-connect.zip` when a version tag (e.g. `v1.1.0`) is pushed from `release/1.1.x`.
 
 ```
 # Zip files ready for a WordPress instalation
 npm run package
 ```
+
+### Optional constants and filters
+
+Define in `wp-config.php` before the plugin loads:
+
+```php
+define( 'WPCC_VERIFY_ENDPOINT', 'https://your-signer.example.com/' );
+define( 'WPCC_DISABLE_SETUP_WIZARD', true );
+```
+
+Filters:
+
+- `wpcc_verify_endpoint` — signature verification URL
+- `wpcc_load_options` — frontend label/options array (multilingual overrides)
+- `wpcc_disable_setup_wizard` — skip setup wizard on dashboard
+- `wpcc_force_enqueue_assets` — enqueue React on all frontend pages
+
+PRs accepted in this repository may also be submitted to the WordPress plugin repository by the contributor team.
 
 ---
 

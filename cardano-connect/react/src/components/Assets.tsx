@@ -6,12 +6,17 @@ import {Asset as AssetComponent} from "./Asset";
 import {classMap, convertToApiAsset} from "../library/utils";
 import {Loader} from "./common/Loader";
 import {backendGetAsset} from "../library";
+import {Gated} from "./common/Gated";
 
 export const Assets = ({
     perPage = 10, // if set to 0, pagination will be disabled
     hideTitles = null,
     notFound = null,
     whitelist = null,
+    gated = null,
+    gatedPlaceholder = null,
+    gate = null,
+    gateHideComponent = null,
 }: ComponentAssets) => {
 
     // APP State
@@ -88,7 +93,7 @@ export const Assets = ({
         setLoading(false)
     }, [filteredAssets, apiAssets])
 
-    // Set data on load
+    // Set data on a load
 
     useEffect(() => {
         if (user.connected && assets && assets.length) {
@@ -118,17 +123,22 @@ export const Assets = ({
                 <Loader />
             ) : (
                 <>
-                    {pagedAssets?.length ? pagedAssets?.map((a, i) => (
-                        <AssetComponent
-                            key={i + a.fingerprint}
-                            asset={a}
-                            showTitle={!hideTitles && (!pagedAssets[i - 1] || a.policy_id !== pagedAssets[i - 1].policy_id)}
-                        />
-                    )) : (
-                        <div className={classMap.notFound}>
-                            {notFound || options.label_no_assets}
-                        </div>
-                    )}
+                    {!gated || (gated && !gateHideComponent) ? (
+                        <>
+                            {pagedAssets?.length ? pagedAssets?.map((a, i) => (
+                                <AssetComponent
+                                    key={i + a.fingerprint}
+                                    asset={a}
+                                    showTitle={!hideTitles && (!pagedAssets[i - 1] || a.policy_id !== pagedAssets[i - 1].policy_id)}
+                                />
+                            )) : (
+                                <div className={classMap.notFound}>
+                                    {notFound || options.label_no_assets}
+                                </div>
+                            )}
+                        </>
+                    ): null}
+                    {gated ? <Gated gated={gated} gatedPlaceholder={gatedPlaceholder} gate={gate}/> : null}
                 </>
             )}
         </div>

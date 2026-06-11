@@ -52,27 +52,75 @@ class Assets extends Base {
 	 * @return void
 	 */
 	public function registerFrontendAssets(): void {
-		if ( ! is_admin() ) {
-			try {
-				ob_start();
-				include $this->plugin_path . 'react/build/asset-manifest.json';
-				$content = ob_get_contents();
-				ob_clean();
-				$json = json_decode( $content, false, 512, JSON_THROW_ON_ERROR );
-			} catch ( JsonException $e ) {
-				$this->log( $e->getMessage() );
-				return;
-			}
-			foreach ( $json->entrypoints as $entrypoint ) {
-				if ( str_contains( $entrypoint, '.js' ) ) {
-					wp_enqueue_script( 'wpcc-react-js', $this->react_cdn . $entrypoint, [], $this->version, true );
-					wp_localize_script( 'wpcc-react-js', 'wpCardanoConnect', [
-						'nonce' => wp_create_nonce( 'wp_rest' )
-					] );
-				} else if ( ! $this->getSetting( self::SETTING_PREFIX . 'disable_styles' ) ) {
-					wp_enqueue_style( 'wpcc-react-css', $this->react_cdn . $entrypoint, [], $this->version );
-				}
+		if ( is_admin() || ! $this->shouldEnqueueFrontend() ) {
+			return;
+		}
+
+		try {
+			ob_start();
+			include $this->plugin_path . 'react/build/asset-manifest.json';
+			$content = ob_get_contents();
+			ob_clean();
+			$json = json_decode( $content, false, 512, JSON_THROW_ON_ERROR );
+		} catch ( JsonException $e ) {
+			$this->log( $e->getMessage() );
+
+			return;
+		}
+		foreach ( $json->entrypoints as $entrypoint ) {
+			if ( str_contains( $entrypoint, '.js' ) ) {
+				wp_enqueue_script( 'wpcc-react-js', $this->react_cdn . $entrypoint, [], $this->version, true );
+				wp_localize_script( 'wpcc-react-js', 'wpCardanoConnect', [
+					'nonce' => wp_create_nonce( 'wp_rest' ),
+				] );
+			} elseif ( ! $this->getSetting( self::SETTING_PREFIX . 'disable_styles' ) ) {
+				wp_enqueue_style( 'wpcc-react-css', $this->react_cdn . $entrypoint, [], $this->version );
 			}
 		}
+	}
+
+	/**
+	 * Whether frontend React assets should load on the current request.
+	 */
+	private function shouldEnqueueFrontend(): bool {
+		if ( apply_filters( 'wpcc_force_enqueue_assets', false ) ) {
+			return true;
+		}
+
+		global $post;
+
+		if ( ! $post instanceof \WP_Post ) {
+			return false;
+		}
+
+		$blocks = [
+			'cardano-connect/connector',
+			'cardano-connect/assets',
+			'cardano-connect/balance',
+			'cardano-connect/pools',
+			'cardano-connect/dreps',
+		];
+
+		foreach ( $blocks as $block ) {
+			if ( has_block( $block, $post ) ) {
+				return true;
+			}
+		}
+
+		$shortcodes = [
+			'cardano-connect-connector',
+			'cardano-connect-assets',
+			'cardano-connect-balance',
+			'cardano-connect-pools',
+			'cardano-connect-dreps',
+		];
+
+		foreach ( $shortcodes as $shortcode ) {
+			if ( has_shortcode( $post->post_content, $shortcode ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

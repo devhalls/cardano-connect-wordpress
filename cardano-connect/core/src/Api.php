@@ -70,16 +70,16 @@ class Api extends Base {
 			[
 				'methods'             => 'POST',
 				'callback'            => [ $this, 'connect' ],
-				'permission_callback' => '__return_true'
+				'permission_callback' => [ $this, 'verifyConnectPermission' ],
 			]
 		);
 		register_rest_route(
 			$this->plugin_name,
 			'/disconnect/',
 			[
-				'methods'             => 'GET',
+				'methods'             => 'POST',
 				'callback'            => [ $this, 'disconnect' ],
-				'permission_callback' => '__return_true'
+				'permission_callback' => [ $this, 'verifyDisconnectPermission' ],
 			]
 		);
 		register_rest_route(
@@ -180,7 +180,7 @@ class Api extends Base {
 		register_rest_route( $this->plugin_name, '/render-block', [
 			'methods'             => 'POST',
 			'callback'            => [ $this, 'renderGatedBlock' ],
-			'permission_callback' => '__return_true',
+			'permission_callback' => [ $this, 'verifyRestNonce' ],
 			'args'                => [
 				'slug' => [
 					'required' => true,
@@ -259,6 +259,14 @@ class Api extends Base {
 	 * @route /cardano-connect/connect
 	 */
 	public function connect( $request ): array {
+		if ( ! $this->checkRateLimit( 'connect_' . $this->getClientIp(), 20, MINUTE_IN_SECONDS ) ) {
+			return $this->returnResponse(
+				false,
+				[],
+				__( 'Too many requests. Please try again later.', 'cardano-connect' )
+			);
+		}
+
 		// Define local data
 		$data          = [];
 		$success       = false;
@@ -468,7 +476,7 @@ class Api extends Base {
 		return $this->returnResponse(
 			false,
 			[],
-			$data->message
+			$data->message ?: ''
 		);
 	}
 
@@ -581,5 +589,55 @@ class Api extends Base {
 
 	public function cron(): void {
 
+	}
+
+	/**
+	 * Verify REST nonce header for mutating routes.
+	 */
+	public function verifyRestNonce( WP_REST_Request $request ): bool {
+		$nonce = $request->get_header( 'X-WP-Nonce' );
+
+		return (bool) wp_verify_nonce( $nonce, 'wp_rest' );
+	}
+
+	/**
+	 * Permission callback for wallet connect requests.
+	 */
+	public function verifyConnectPermission( WP_REST_Request $request ): bool {
+		return $this->verifyRestNonce( $request );
+	}
+
+	/**
+	 * Permission callback for disconnect requests.
+	 */
+	public function verifyDisconnectPermission( WP_REST_Request $request ): bool {
+		return $this->verifyRestNonce( $request ) && is_user_logged_in();
+	}
+
+	/**
+	 * Basic rate limiting using transients.
+	 */
+	protected function checkRateLimit( string $key, int $limit, int $window ): bool {
+		$transient_key = 'wpcc_rl_' . md5( $key );
+		$count         = (int) get_transient( $transient_key );
+
+		if ( $count >= $limit ) {
+			return false;
+		}
+
+		set_transient( $transient_key, $count + 1, $window );
+
+		return true;
+	}
+
+	/**
+	 * Client IP for rate limiting.
+	 */
+	protected function getClientIp(): string {
+		if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		}
+
+		return 'unknown';
 	}
 }
