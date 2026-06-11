@@ -1,8 +1,15 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
+
+const stubPath = path.resolve(
+	path.dirname( fileURLToPath( import.meta.url ) ),
+	'src/stubs/empty.js',
+);
 
 export default defineConfig({
 	plugins: [
@@ -16,6 +23,12 @@ export default defineConfig({
 			},
 		} ),
 	],
+	resolve: {
+		alias: {
+			npm: stubPath,
+			dockerode: stubPath,
+		},
+	},
 	base: '/wp-content/plugins/cardano-connect/react/build/',
 	build: {
 		outDir: 'build',
