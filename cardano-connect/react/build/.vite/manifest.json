@@ -4,12 +4,12 @@
     "src": "node_modules/@sidan-lab/sidan-csl-rs-browser/sidan_csl_rs_bg.wasm"
   },
   "src/index.tsx": {
-    "file": "static/js/index.BYy6nbn6.js",
+    "file": "static/js/index.D0QsanEi.js",
     "name": "index",
     "src": "src/index.tsx",
     "isEntry": true,
     "css": [
-      "static/css/index.D9CzphbE.css"
+      "static/css/index.DdR8dEHC.css"
     ],
     "assets": [
       "sidan_csl_rs_bg.B4hxaGFu.wasm"

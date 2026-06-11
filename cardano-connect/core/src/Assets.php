@@ -5,6 +5,27 @@ namespace WPCC;
 use JsonException;
 
 class Assets extends Base {
+	private const FRONTEND_BLOCKS = [
+		'cardano-connect/connector',
+		'cardano-connect/assets',
+		'cardano-connect/balance',
+		'cardano-connect/pools',
+		'cardano-connect/dreps',
+	];
+
+	private const FRONTEND_SHORTCODES = [
+		'cardano-connect-connector',
+		'cardano-connect-assets',
+		'cardano-connect-balance',
+		'cardano-connect-pools',
+		'cardano-connect-dreps',
+	];
+
+	/**
+	 * Set when a shortcode renders after wp_enqueue_scripts (e.g. theme sidebar).
+	 */
+	private static bool $frontend_required = false;
+
 	/**
 	 * Ends in forward slash.
 	 * @var string
@@ -35,7 +56,15 @@ class Assets extends Base {
 	public function run(): void {
 		add_action( 'admin_enqueue_scripts', [ $this, 'registerAdminAssets' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'registerFrontendAssets' ] );
+		add_action( 'wp_footer', [ $this, 'registerFrontendAssetsLate' ], 1 );
 		add_filter( 'script_loader_tag', [ $this, 'addModuleTypeToReactScript' ], 10, 3 );
+	}
+
+	/**
+	 * Mark React assets as required (called from shortcode render callbacks).
+	 */
+	public static function requireFrontendAssets(): void {
+		self::$frontend_required = true;
 	}
 
 	/**
@@ -53,7 +82,29 @@ class Assets extends Base {
 	 * @return void
 	 */
 	public function registerFrontendAssets(): void {
-		if ( is_admin() || ! $this->shouldEnqueueFrontend() ) {
+		if ( is_admin() ) {
+			return;
+		}
+
+		$this->enqueueFrontendAssets();
+	}
+
+	/**
+	 * Enqueue React assets when shortcodes render after wp_enqueue_scripts.
+	 */
+	public function registerFrontendAssetsLate(): void {
+		if ( is_admin() ) {
+			return;
+		}
+
+		$this->enqueueFrontendAssets();
+	}
+
+	/**
+	 * @return void
+	 */
+	private function enqueueFrontendAssets(): void {
+		if ( ! $this->shouldEnqueueFrontend() || wp_script_is( 'wpcc-react-js', 'enqueued' ) ) {
 			return;
 		}
 
@@ -79,8 +130,16 @@ class Assets extends Base {
 	 * Vite builds ES modules; ensure WordPress outputs type="module" on WP < 6.3.
 	 */
 	public function addModuleTypeToReactScript( string $tag, string $handle, string $src ): string {
-		if ( 'wpcc-react-js' !== $handle || str_contains( $tag, 'type=' ) ) {
+		if ( 'wpcc-react-js' !== $handle ) {
 			return $tag;
+		}
+
+		if ( str_contains( $tag, 'type="module"' ) ) {
+			return $tag;
+		}
+
+		if ( preg_match( '/\stype=(["\']).*?\1/', $tag ) ) {
+			return preg_replace( '/\stype=(["\']).*?\1/', ' type="module"', $tag, 1 );
 		}
 
 		return str_replace( '<script ', '<script type="module" ', $tag );
@@ -144,41 +203,111 @@ class Assets extends Base {
 	 * Whether frontend React assets should load on the current request.
 	 */
 	private function shouldEnqueueFrontend(): bool {
-		if ( apply_filters( 'wpcc_force_enqueue_assets', false ) ) {
+		if ( apply_filters( 'wpcc_force_enqueue_assets', false ) || self::$frontend_required ) {
 			return true;
 		}
 
 		global $post;
 
-		if ( ! $post instanceof \WP_Post ) {
-			return false;
-		}
+		if ( $post instanceof \WP_Post ) {
+			if ( $this->contentUsesFrontend( $post->post_content ) ) {
+				return true;
+			}
 
-		$blocks = [
-			'cardano-connect/connector',
-			'cardano-connect/assets',
-			'cardano-connect/balance',
-			'cardano-connect/pools',
-			'cardano-connect/dreps',
-		];
-
-		foreach ( $blocks as $block ) {
-			if ( has_block( $block, $post ) ) {
+			if ( $this->postMetaUsesFrontend( (int) $post->ID ) ) {
 				return true;
 			}
 		}
 
-		$shortcodes = [
-			'cardano-connect-connector',
-			'cardano-connect-assets',
-			'cardano-connect-balance',
-			'cardano-connect-pools',
-			'cardano-connect-dreps',
-		];
+		return $this->navMenusUseFrontend();
+	}
 
-		foreach ( $shortcodes as $shortcode ) {
-			if ( has_shortcode( $post->post_content, $shortcode ) ) {
+	/**
+	 * @param string $content
+	 *
+	 * @return bool
+	 */
+	private function contentUsesFrontend( string $content ): bool {
+		if ( '' === $content ) {
+			return false;
+		}
+
+		foreach ( self::FRONTEND_BLOCKS as $block ) {
+			if ( has_block( $block, $content ) ) {
 				return true;
+			}
+		}
+
+		foreach ( self::FRONTEND_SHORTCODES as $shortcode ) {
+			if ( has_shortcode( $content, $shortcode ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Scan post meta (e.g. ACF flexible content) for blocks and shortcodes.
+	 *
+	 * @param int $post_id
+	 *
+	 * @return bool
+	 */
+	private function postMetaUsesFrontend( int $post_id ): bool {
+		$meta = get_post_meta( $post_id );
+		if ( ! is_array( $meta ) ) {
+			return false;
+		}
+
+		foreach ( $meta as $values ) {
+			if ( ! is_array( $values ) ) {
+				continue;
+			}
+
+			foreach ( $values as $value ) {
+				if ( ! is_string( $value ) || '' === $value ) {
+					continue;
+				}
+
+				if ( $this->contentUsesFrontend( $value ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Scan assigned nav menu items for shortcodes in titles or descriptions.
+	 *
+	 * @return bool
+	 */
+	private function navMenusUseFrontend(): bool {
+		$locations = get_nav_menu_locations();
+		if ( ! is_array( $locations ) ) {
+			return false;
+		}
+
+		foreach ( $locations as $menu_id ) {
+			if ( ! $menu_id ) {
+				continue;
+			}
+
+			$items = wp_get_nav_menu_items( $menu_id );
+			if ( ! is_array( $items ) ) {
+				continue;
+			}
+
+			foreach ( $items as $item ) {
+				if ( ! $item instanceof \WP_Post ) {
+					continue;
+				}
+
+				if ( $this->contentUsesFrontend( $item->title . $item->description ) ) {
+					return true;
+				}
 			}
 		}
 

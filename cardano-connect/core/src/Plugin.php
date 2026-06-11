@@ -102,6 +102,8 @@ class Plugin extends Base {
 	 * @return string
 	 */
 	private function registerBlockShortcode( string $name, array $attributes = [] ): string {
+		Assets::requireFrontendAssets();
+
 		$file_path  = $this->plugin_path . 'blocks/' . $name . '/src/block.json';
 		$definition = [];
 		if ( file_exists( $file_path ) ) {

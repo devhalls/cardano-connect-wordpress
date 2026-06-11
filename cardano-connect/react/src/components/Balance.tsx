@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from "react";
 import {useAppSelector} from "../library/state";
 import {getUserBalances, getUserCollateral, getUserNetwork, getUserState} from "../library/user";
+import {getOptionState} from "../library/option";
 import {useWalletList} from "@meshsdk/react";
 import {classMap, formatBalance, trimAddress, ucFirst} from "../library/utils";
+import {hasBrowserWallet} from "../library/wallet";
 import {Copy} from "./common/Copy";
 import {Loader} from "./common/Loader";
 import {Gated} from "./common/Gated";
@@ -18,13 +20,16 @@ export const Balance = ({
     // APP State
 
     const user: UserState = useAppSelector(getUserState)
+    const options: OptionState = useAppSelector(getOptionState)
     const network: string = useAppSelector(getUserNetwork)
     const balances: Balance[] = useAppSelector(getUserBalances)
     const collateral: UxTO[] = useAppSelector(getUserCollateral)
 
     // Local state
 
-    const wallet = useWalletList().find((wallet) => wallet.name === user.web3?.cardano_connect_wallet);
+    const wallets = useWalletList()
+    const walletExtensionAvailable = hasBrowserWallet(wallets)
+    const wallet = wallets.find((wallet) => wallet.name === user.web3?.cardano_connect_wallet);
     const [loading, setLoading] = useState<boolean>(true)
     const [filteredBalance, setFilteredBalance] = useState<Balance[]|null>(null)
     const address: string = network === 'testnet' ? user.web3?.cardano_connect_address_testnet : user.web3?.cardano_connect_address
@@ -33,12 +38,25 @@ export const Balance = ({
     // Load data
 
     useEffect(() => {
-        const allowedUnits = ['lovelace']
-        if (user.connected && balances) {
-            setFilteredBalance(balances.filter(b => allowedUnits.includes(b.unit) ? b : false))
+        if ( ! user.connected ) {
+            setLoading( false )
+            return
         }
-        setLoading(!balances?.length)
-    }, [user.connected, balances]);
+
+        if ( ! walletExtensionAvailable ) {
+            setLoading( false )
+            return
+        }
+
+        const allowedUnits = ['lovelace']
+        if ( balances?.length ) {
+            setFilteredBalance( balances.filter( b => allowedUnits.includes( b.unit ) ? b : false ) )
+            setLoading( false )
+            return
+        }
+
+        setLoading( true )
+    }, [user.connected, balances, walletExtensionAvailable]);
 
     return (
         <>
@@ -46,6 +64,8 @@ export const Balance = ({
                 <div className={`${classMap.balanceContainer} ${className}`}>
                     {loading ? (
                         <Loader />
+                    ) : !walletExtensionAvailable ? (
+                        <div className={classMap.notFound}>{options.label_empty}</div>
                     ) : (
                         <>
                             {user.connected ? (
@@ -62,13 +82,15 @@ export const Balance = ({
                                             <Copy text={trimAddress(stakeAddress)} copyText={stakeAddress} />
                                         </div>
                                     </div>
-                                    <div className={classMap.balanceRow}>
-                                        <div className={classMap.balanceCol}>Connect with:</div>
-                                        <div className={classMap.row}>
-                                            <img width={18} height={18} src={wallet.icon} alt={wallet.name}/>
-                                            {ucFirst(user.web3.cardano_connect_wallet)}
+                                    {wallet ? (
+                                        <div className={classMap.balanceRow}>
+                                            <div className={classMap.balanceCol}>Connect with:</div>
+                                            <div className={classMap.row}>
+                                                <img width={18} height={18} src={wallet.icon} alt={wallet.name}/>
+                                                {ucFirst(user.web3.cardano_connect_wallet)}
+                                            </div>
                                         </div>
-                                    </div>
+                                    ) : null}
                                 </>
                             ) : null }
                             {collateral?.length ? (

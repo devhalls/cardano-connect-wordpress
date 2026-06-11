@@ -34,6 +34,12 @@ export const translateError = (error: string): string => {
         },{
             match: 'no account set',
             replace: 'No account is set for connection, please enable a connection in your wallet then try again'
+        },{
+            match: '[browserwallet]',
+            replace: ''
+        },{
+            match: 'an error occurred during enable',
+            replace: ''
         }
     ]
     replacements.map(r => {
@@ -265,6 +271,7 @@ export const classMap = {
     disconnected: 'connector-content connector-disconnected',
     list: 'connector-wallet-list wpcc-card',
     menu: 'connector-menu-list wpcc-card',
+    menuDownload: 'connector-menu-download',
     listButton: 'connector-list-button',
     listEmpty: 'connector-no-wallets',
     button: 'connector-button',

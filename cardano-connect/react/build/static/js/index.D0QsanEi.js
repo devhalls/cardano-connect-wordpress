@@ -120423,6 +120423,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           {
             match: "no account set",
             replace: "No account is set for connection, please enable a connection in your wallet then try again"
+          },
+          {
+            match: "[browserwallet]",
+            replace: ""
+          },
+          {
+            match: "an error occurred during enable",
+            replace: ""
           }
         ].map((f) => (a.includes(f.match) && (a = f.replace), f)), a;
       }, formatBalance = (o, a = 2) => {
@@ -120581,6 +120589,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         disconnected: "connector-content connector-disconnected",
         list: "connector-wallet-list wpcc-card",
         menu: "connector-menu-list wpcc-card",
+        menuDownload: "connector-menu-download",
         listButton: "connector-list-button",
         listEmpty: "connector-no-wallets",
         button: "connector-button",
@@ -120754,6 +120763,25 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           slug: o.slug
         });
       }
+      const WALLET_DOWNLOAD_URLS = {
+        eternl: "https://eternl.io/app",
+        lace: "https://www.lace.io/",
+        nami: "https://namiwallet.io/",
+        flint: "https://flint-wallet.com/",
+        typhon: "https://typhonwallet.io/",
+        gero: "https://gerowallet.io/",
+        vespr: "https://vespr.xyz/",
+        yoroi: "https://yoroi-wallet.com/"
+      }, CARDANO_WALLETS_URL = "https://www.cardano.org/wallets/", hasBrowserWallet = (o = []) => o.length > 0 ? true : typeof window > "u" || !window.cardano ? false : Object.keys(window.cardano).length > 0, getWalletDownloadUrl = (o) => {
+        if (o) {
+          const a = WALLET_DOWNLOAD_URLS[o.toLowerCase()];
+          if (a) return a;
+        }
+        return CARDANO_WALLETS_URL;
+      }, isWalletExtensionError = (o) => {
+        const a = o.toLowerCase();
+        return a.includes("[browserwallet]") || a.includes("an error occurred during enable") || a.includes("wallet extension") || a.includes("no wallets detected");
+      };
       function formatProdErrorMessage$1(o) {
         return `Minified Redux error #${o}; visit https://redux.js.org/Errors?code=${o} for the full message or use the non-minified dev environment for full errors. `;
       }
@@ -122743,153 +122771,184 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           ]
         })
       }), Connector = ({}) => {
-        var _a2, _b;
-        const o = useAppDispatch(), a = useAppSelector(getUserState), s = useAppSelector(getOptionState), f = useAppSelector(getUserNetwork), g = useWalletList(), { connect: v, disconnect: z, wallet: U, name: u, error: J, connected: X } = useWallet(), [ie, se] = reactExports.useState(true), [de, fe] = reactExports.useState(false), [ue, pe] = reactExports.useState(true), [he, _e] = reactExports.useState(false), [ge, ve] = reactExports.useState(true), Pe = (W) => {
-          o(setMessage({
-            message: translateError(W),
+        var _a2, _b, _c, _d;
+        const o = useAppDispatch(), a = useAppSelector(getUserState), s = useAppSelector(getOptionState), f = useAppSelector(getUserNetwork), g = useWalletList(), v = hasBrowserWallet(g), { connect: z, disconnect: U, wallet: u, name: J, error: X, connected: ie } = useWallet(), [se, de] = reactExports.useState(true), [fe, ue] = reactExports.useState(false), [pe, he] = reactExports.useState(true), [_e, ge] = reactExports.useState(false), [ve, Pe] = reactExports.useState(true), [Fe, Te] = reactExports.useState(false), Ee = (te) => isWalletExtensionError(te) ? (s == null ? void 0 : s.label_empty) || te : translateError(te), xe = (te, me = false) => {
+          const Ce = Ee(te);
+          isWalletExtensionError(te) && (Te(true), he(false), Ce && o(setMessage({
+            message: Ce,
             type: "error"
-          })), _e(false), o(resetUserState()), pe(false), z();
-        }, Fe = () => {
-          o(resetMessageState()), se(!ie);
-        }, Te = async (W) => {
-          pe(true);
-          try {
-            await v(W.name), se(true);
-          } catch (Q) {
-            Pe(Q.message);
+          })), me || _e) || (o(setMessage({
+            message: Ce,
+            type: "error"
+          })), ge(false), o(resetUserState()), he(false), U());
+        }, Ie = (te, me) => jsxRuntimeExports.jsx("a", {
+          className: te,
+          href: getWalletDownloadUrl(me),
+          target: "_blank",
+          rel: "noopener noreferrer",
+          children: s.label_connect
+        }), K = () => {
+          if (o(resetMessageState()), _e) {
+            Pe(!ve);
+            return;
           }
-        }, Ee = async () => {
+          de(!se);
+        }, I = async (te) => {
+          he(true), Te(false);
+          try {
+            await z(te.name), de(true);
+          } catch (me) {
+            xe(me.message);
+          }
+        }, V = async () => {
           if (confirm(s == null ? void 0 : s.label_disconnect_prompt)) {
-            pe(true), ve(true);
+            he(true), Pe(true);
             try {
-              const W = await backendDisconnect(a.nonce);
-              W.success ? (o(resetUserState()), o(setMessage({
-                message: W.message,
+              const te = await backendDisconnect(a.nonce);
+              te.success ? (o(resetUserState()), o(setMessage({
+                message: te.message,
                 type: "success"
-              })), s.logout_redirect ? global$2.window.location.replace(s.logout_redirect) : global$2.window.location.reload()) : Pe(W.message);
-            } catch (W) {
-              Pe(W.message);
+              })), s.logout_redirect ? global$2.window.location.replace(s.logout_redirect) : global$2.window.location.reload()) : xe(te.message);
+            } catch (te) {
+              xe(te.message);
             }
           }
-        }, xe = reactExports.useCallback(async () => {
-          var _a3, _b2, _c;
+        }, W = reactExports.useCallback(async () => {
+          var _a3, _b2, _c2;
           try {
-            const W = await backendGetOptions(wpCardanoConnect == null ? void 0 : wpCardanoConnect.nonce);
-            o(setOptionState(W.data));
-            const Q = await backendGetUser(wpCardanoConnect == null ? void 0 : wpCardanoConnect.nonce);
-            return ((_b2 = (_a3 = Q.data) == null ? void 0 : _a3.web3) == null ? void 0 : _b2.cardano_connect_network) ? (o(setUserState({
+            const te = await backendGetOptions(wpCardanoConnect == null ? void 0 : wpCardanoConnect.nonce);
+            o(setOptionState(te.data));
+            const me = await backendGetUser(wpCardanoConnect == null ? void 0 : wpCardanoConnect.nonce);
+            return ((_b2 = (_a3 = me.data) == null ? void 0 : _a3.web3) == null ? void 0 : _b2.cardano_connect_network) ? (o(setUserState({
               connected: true,
-              network: (_c = Q.data.web3) == null ? void 0 : _c.cardano_connect_network,
-              web3: Q.data.web3,
-              user: Q.data.user,
-              account: Q.data.account,
-              nonce: Q.nonce
-            })), _e(true)) : pe(false), fe(true), true;
-          } catch (W) {
-            return Pe(W.message), false;
+              network: (_c2 = me.data.web3) == null ? void 0 : _c2.cardano_connect_network,
+              web3: me.data.web3,
+              user: me.data.user,
+              account: me.data.account,
+              nonce: me.nonce
+            })), ge(true)) : he(false), ue(true), true;
+          } catch (te) {
+            return xe(te.message), false;
           }
-        }, []), Ie = reactExports.useCallback(async (W) => {
+        }, []), Q = reactExports.useCallback(async (te) => {
+          if (!hasBrowserWallet(g)) return Te(true), he(false), false;
           try {
-            return await v(W), pe(false), true;
-          } catch (Q) {
-            return Pe(Q.message), false;
+            return await z(te), he(false), Te(false), true;
+          } catch (me) {
+            return xe(me.message, true), false;
           }
-        }, []), K = reactExports.useCallback(async (W) => {
+        }, [
+          g,
+          z
+        ]), Z = reactExports.useCallback(async (te) => {
           try {
-            const Q = await U.getNetworkId(), Z = await U.getChangeAddress(), ae = (await U.getRewardAddresses())[0], ce = await U.signData(ae, W), le = await backendConnect({
+            const me = await u.getNetworkId(), Ce = await u.getChangeAddress(), je = (await u.getRewardAddresses())[0], He = await u.signData(je, te), We = await backendConnect({
               nonce: a.nonce || (wpCardanoConnect == null ? void 0 : wpCardanoConnect.nonce),
-              message: W,
-              address: Z,
-              stakeAddress: ae,
-              signature: ce,
-              wallet: u,
-              network: Q
+              message: te,
+              address: Ce,
+              stakeAddress: je,
+              signature: He,
+              wallet: J,
+              network: me
             });
-            if (!le.success) Pe(le.message);
+            if (!We.success) xe(We.message);
             else return o(setMessage({
-              message: le.message,
+              message: We.message,
               type: "success"
-            })), s.login_redirect ? global$2.window.location.replace(s.login_redirect) : global$2.window.location.reload(), le.success;
-          } catch (Q) {
-            return Pe(Q.message), false;
+            })), s.login_redirect ? global$2.window.location.replace(s.login_redirect) : global$2.window.location.reload(), We.success;
+          } catch (me) {
+            return xe(me.message, _e), false;
           }
         }, [
           a,
-          U,
-          u
-        ]), I = reactExports.useCallback(async (W = false) => {
+          u,
+          J,
+          _e,
+          s
+        ]), ae = reactExports.useCallback(async (te = false) => {
           var _a3, _b2;
           try {
-            const Q = await U.getNetworkId(), Z = (await U.getRewardAddresses())[0];
-            o(setUserNetwork(Q === 1 ? "mainnet" : "testnet")), o(setUserAssets(await U.getAssets())), o(setUserBalances(await U.getBalance())), o(setUserCollateral(await U.getCollateral()));
-            let ae = null;
-            return !(s == null ? void 0 : s.mainnet_active) && Q === 1 && (ae = s.label_switch_to_testnet), (a == null ? void 0 : a.web3) && (Q === 1 && Z !== (a == null ? void 0 : a.web3.cardano_connect_stake_address) || Q !== 1 && Z !== (a == null ? void 0 : a.web3.cardano_connect_stake_address_testnet)) && (ae = s.label_invalid_account), W && (Q === 1 && !((_a3 = a == null ? void 0 : a.web3) == null ? void 0 : _a3.cardano_connect_address) && (ae = s.label_create_mainnet_prompt), Q === 0 && !((_b2 = a == null ? void 0 : a.web3) == null ? void 0 : _b2.cardano_connect_address_testnet) && (ae = s.label_create_testnet_prompt)), ae ? (Pe(ae), false) : true;
-          } catch (Q) {
-            return Pe(Q.message), false;
+            const me = await u.getNetworkId(), Ce = (await u.getRewardAddresses())[0];
+            o(setUserNetwork(me === 1 ? "mainnet" : "testnet")), o(setUserAssets(await u.getAssets())), o(setUserBalances(await u.getBalance())), o(setUserCollateral(await u.getCollateral()));
+            let je = null;
+            return !(s == null ? void 0 : s.mainnet_active) && me === 1 && (je = s.label_switch_to_testnet), (a == null ? void 0 : a.web3) && (me === 1 && Ce !== (a == null ? void 0 : a.web3.cardano_connect_stake_address) || me !== 1 && Ce !== (a == null ? void 0 : a.web3.cardano_connect_stake_address_testnet)) && (je = s.label_invalid_account), te && (me === 1 && !((_a3 = a == null ? void 0 : a.web3) == null ? void 0 : _a3.cardano_connect_address) && (je = s.label_create_mainnet_prompt), me === 0 && !((_b2 = a == null ? void 0 : a.web3) == null ? void 0 : _b2.cardano_connect_address_testnet) && (je = s.label_create_testnet_prompt)), je ? (xe(je), false) : true;
+          } catch (me) {
+            return xe(me.message, _e), false;
           }
         }, [
-          U,
-          s
-        ]), V = reactExports.useCallback(async () => {
+          u,
+          s,
+          a,
+          _e
+        ]), ce = reactExports.useCallback(async () => {
           try {
-            const Q = `account: ${(await U.getRewardAddresses())[0]}`;
-            return await I() ? (await K(Q), pe(false), true) : false;
-          } catch (W) {
-            return Pe(W.message), false;
+            const me = `account: ${(await u.getRewardAddresses())[0]}`;
+            return await ae() ? (await Z(me), he(false), true) : false;
+          } catch (te) {
+            return xe(te.message, _e), false;
           }
         }, [
-          U,
-          I,
-          K
+          u,
+          ae,
+          Z,
+          _e
         ]);
-        return reactExports.useEffect(() => {
-          de || xe().then();
+        reactExports.useEffect(() => {
+          fe || W().then();
         }, [
-          de,
-          xe
+          fe,
+          W
+        ]), reactExports.useEffect(() => {
+          fe && !v && (Te(true), he(false));
+        }, [
+          fe,
+          v
         ]), reactExports.useEffect(() => {
           var _a3;
-          !X && de && ((_a3 = a.web3) == null ? void 0 : _a3.cardano_connect_wallet) && Ie(a.web3.cardano_connect_wallet).then();
+          !ie && fe && ((_a3 = a.web3) == null ? void 0 : _a3.cardano_connect_wallet) && v && Q(a.web3.cardano_connect_wallet).then();
         }, [
-          de,
-          X,
+          fe,
+          ie,
           a,
-          Ie
+          Q,
+          v
         ]), reactExports.useEffect(() => {
-          X && !he ? V().then() : X && I(true).then(() => pe(false));
+          ie && !_e ? ce().then() : ie && ae(true).then(() => he(false));
         }, [
-          X,
-          he
+          ie,
+          _e
         ]), reactExports.useEffect(() => {
-          if (J) {
-            let W = false;
-            const Q = J.toString();
+          if (X) {
+            let te = false;
+            const me = X.toString();
             [
               "no account set",
               "user declined",
               "user canceled connection"
-            ].map((ae) => {
-              Q.includes(ae) && (W = true, Pe(Q));
-            }), W || o(setMessage({
+            ].map((je) => {
+              me.includes(je) && (te = true, xe(me, _e));
+            }), te || (isWalletExtensionError(me) ? xe(me, _e) : (o(setMessage({
               type: "error",
-              message: translateError(J.toString())
-            })), pe(false);
+              message: Ee(me)
+            })), he(false))), he(false);
           }
         }, [
-          J
-        ]), jsxRuntimeExports.jsx("div", {
+          X
+        ]);
+        const le = !v || Fe;
+        return jsxRuntimeExports.jsx("div", {
           className: classMap.container,
           children: jsxRuntimeExports.jsxs("div", {
-            className: he ? classMap.connected : classMap.disconnected,
+            className: _e ? classMap.connected : classMap.disconnected,
             children: [
               jsxRuntimeExports.jsxs("button", {
                 className: classMap.button,
-                onClick: () => he ? ve(!ge) : Fe(),
+                onClick: K,
                 children: [
                   jsxRuntimeExports.jsx("span", {
                     className: classMap.buttonIcon
                   }),
-                  ue ? jsxRuntimeExports.jsx("span", {
+                  pe ? jsxRuntimeExports.jsx("span", {
                     className: classMap.buttonContent,
                     children: jsxRuntimeExports.jsx(Loader, {
                       className: "wpcc-loader",
@@ -122900,9 +122959,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     children: [
                       jsxRuntimeExports.jsx("span", {
                         className: classMap.buttonText,
-                        children: he ? s.label_connected : ie ? s == null ? void 0 : s.label_connect : s == null ? void 0 : s.label_connect_cancel
+                        children: _e ? s.label_connected : se ? s == null ? void 0 : s.label_connect : s == null ? void 0 : s.label_connect_cancel
                       }),
-                      he && jsxRuntimeExports.jsx("span", {
+                      _e && jsxRuntimeExports.jsx("span", {
                         className: classMap.buttonAddress,
                         children: trimAddress(f === "testnet" ? ((_a2 = a == null ? void 0 : a.web3) == null ? void 0 : _a2.cardano_connect_address_testnet) || "" : ((_b = a == null ? void 0 : a.web3) == null ? void 0 : _b.cardano_connect_address) || "")
                       })
@@ -122910,38 +122969,44 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                   })
                 ]
               }),
-              !ie && jsxRuntimeExports.jsx("div", {
+              !se && jsxRuntimeExports.jsx("div", {
                 className: classMap.list,
-                children: g.length > 0 ? g.map((W) => jsxRuntimeExports.jsxs("button", {
-                  onClick: () => Te(W),
+                children: g.length > 0 ? g.map((te) => jsxRuntimeExports.jsxs("button", {
+                  onClick: () => I(te),
                   className: classMap.listButton,
                   children: [
                     jsxRuntimeExports.jsx("img", {
                       width: 26,
                       height: "auto",
-                      src: W.icon,
-                      alt: W.name
+                      src: te.icon,
+                      alt: te.name
                     }),
                     " ",
-                    ucFirst(W.name)
+                    ucFirst(te.name)
                   ]
-                }, W.name)) : jsxRuntimeExports.jsx("div", {
-                  className: classMap.listEmpty,
-                  children: s == null ? void 0 : s.label_empty
+                }, te.name)) : jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, {
+                  children: [
+                    jsxRuntimeExports.jsx("div", {
+                      className: classMap.listEmpty,
+                      children: s == null ? void 0 : s.label_empty
+                    }),
+                    Ie(classMap.listButton, (_c = a == null ? void 0 : a.web3) == null ? void 0 : _c.cardano_connect_wallet)
+                  ]
                 })
               }),
-              !ge && jsxRuntimeExports.jsxs("div", {
+              !ve && jsxRuntimeExports.jsxs("div", {
                 className: classMap.menu,
                 children: [
-                  jsxRuntimeExports.jsx("a", {
+                  _e && s.login_redirect ? jsxRuntimeExports.jsx("a", {
                     href: s.login_redirect,
                     title: "Wallet",
                     children: "Wallet"
-                  }),
-                  jsxRuntimeExports.jsx("div", {
-                    onClick: Ee,
+                  }) : null,
+                  le ? Ie(classMap.menuDownload, (_d = a == null ? void 0 : a.web3) == null ? void 0 : _d.cardano_connect_wallet) : null,
+                  _e ? jsxRuntimeExports.jsx("div", {
+                    onClick: V,
                     children: s.label_disconnect
-                  })
+                  }) : null
                 ]
               })
             ]
@@ -123204,23 +123269,36 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }) : null;
       }, Balance = ({ gated: o, gatedPlaceholder: a, gate: s, gateHideComponent: f, className: g }) => {
         var _a2, _b, _c, _d;
-        const v = useAppSelector(getUserState), z = useAppSelector(getUserNetwork), U = useAppSelector(getUserBalances), u = useAppSelector(getUserCollateral), J = useWalletList().find((pe) => {
+        const v = useAppSelector(getUserState), z = useAppSelector(getOptionState), U = useAppSelector(getUserNetwork), u = useAppSelector(getUserBalances), J = useAppSelector(getUserCollateral), X = useWalletList(), ie = hasBrowserWallet(X), se = X.find((ge) => {
           var _a3;
-          return pe.name === ((_a3 = v.web3) == null ? void 0 : _a3.cardano_connect_wallet);
-        }), [X, ie] = reactExports.useState(true), [se, de] = reactExports.useState(null), fe = z === "testnet" ? (_a2 = v.web3) == null ? void 0 : _a2.cardano_connect_address_testnet : (_b = v.web3) == null ? void 0 : _b.cardano_connect_address, ue = z === "testnet" ? (_c = v.web3) == null ? void 0 : _c.cardano_connect_stake_address_testnet : (_d = v.web3) == null ? void 0 : _d.cardano_connect_stake_address;
+          return ge.name === ((_a3 = v.web3) == null ? void 0 : _a3.cardano_connect_wallet);
+        }), [de, fe] = reactExports.useState(true), [ue, pe] = reactExports.useState(null), he = U === "testnet" ? (_a2 = v.web3) == null ? void 0 : _a2.cardano_connect_address_testnet : (_b = v.web3) == null ? void 0 : _b.cardano_connect_address, _e = U === "testnet" ? (_c = v.web3) == null ? void 0 : _c.cardano_connect_stake_address_testnet : (_d = v.web3) == null ? void 0 : _d.cardano_connect_stake_address;
         return reactExports.useEffect(() => {
-          const pe = [
+          if (!v.connected) {
+            fe(false);
+            return;
+          }
+          if (!ie) {
+            fe(false);
+            return;
+          }
+          const ge = [
             "lovelace"
           ];
-          v.connected && U && de(U.filter((he) => pe.includes(he.unit) ? he : false)), ie(!(U == null ? void 0 : U.length));
+          if (u == null ? void 0 : u.length) {
+            pe(u.filter((ve) => ge.includes(ve.unit) ? ve : false)), fe(false);
+            return;
+          }
+          fe(true);
         }, [
           v.connected,
-          U
+          u,
+          ie
         ]), jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, {
           children: [
             v.connected && (!o || o && !f) ? jsxRuntimeExports.jsx("div", {
               className: `${classMap.balanceContainer} ${g}`,
-              children: X ? jsxRuntimeExports.jsx(Loader, {}) : jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, {
+              children: de ? jsxRuntimeExports.jsx(Loader, {}) : ie ? jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, {
                 children: [
                   v.connected ? jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, {
                     children: [
@@ -123234,8 +123312,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                           jsxRuntimeExports.jsx("div", {
                             className: classMap.balanceCol,
                             children: jsxRuntimeExports.jsx(Copy, {
-                              text: trimAddress(fe),
-                              copyText: fe
+                              text: trimAddress(he),
+                              copyText: he
                             })
                           })
                         ]
@@ -123250,13 +123328,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                           jsxRuntimeExports.jsx("div", {
                             className: classMap.balanceCol,
                             children: jsxRuntimeExports.jsx(Copy, {
-                              text: trimAddress(ue),
-                              copyText: ue
+                              text: trimAddress(_e),
+                              copyText: _e
                             })
                           })
                         ]
                       }),
-                      jsxRuntimeExports.jsxs("div", {
+                      se ? jsxRuntimeExports.jsxs("div", {
                         className: classMap.balanceRow,
                         children: [
                           jsxRuntimeExports.jsx("div", {
@@ -123269,17 +123347,17 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                               jsxRuntimeExports.jsx("img", {
                                 width: 18,
                                 height: 18,
-                                src: J.icon,
-                                alt: J.name
+                                src: se.icon,
+                                alt: se.name
                               }),
                               ucFirst(v.web3.cardano_connect_wallet)
                             ]
                           })
                         ]
-                      })
+                      }) : null
                     ]
                   }) : null,
-                  (u == null ? void 0 : u.length) ? jsxRuntimeExports.jsxs("div", {
+                  (J == null ? void 0 : J.length) ? jsxRuntimeExports.jsxs("div", {
                     className: classMap.balanceRow,
                     children: [
                       jsxRuntimeExports.jsx("div", {
@@ -123288,35 +123366,38 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                       }),
                       jsxRuntimeExports.jsx("div", {
                         className: classMap.balanceCol,
-                        children: u == null ? void 0 : u.map((pe) => {
+                        children: J == null ? void 0 : J.map((ge) => {
                           var _a3, _b2;
-                          return (_b2 = (_a3 = pe.output) == null ? void 0 : _a3.amount) == null ? void 0 : _b2.map((he) => jsxRuntimeExports.jsxs("div", {
+                          return (_b2 = (_a3 = ge.output) == null ? void 0 : _a3.amount) == null ? void 0 : _b2.map((ve) => jsxRuntimeExports.jsxs("div", {
                             children: [
                               "\u20B3 ",
-                              formatBalance(he.quantity)
+                              formatBalance(ve.quantity)
                             ]
-                          }, he.unit + he.quantity));
+                          }, ve.unit + ve.quantity));
                         })
                       })
                     ]
                   }) : null,
-                  se ? jsxRuntimeExports.jsxs("div", {
+                  ue ? jsxRuntimeExports.jsxs("div", {
                     className: classMap.balanceTotalRow,
                     children: [
                       jsxRuntimeExports.jsx("div", {
                         className: classMap.balanceCol,
                         children: "Balance:"
                       }),
-                      se == null ? void 0 : se.map((pe) => jsxRuntimeExports.jsxs("div", {
+                      ue == null ? void 0 : ue.map((ge) => jsxRuntimeExports.jsxs("div", {
                         className: classMap.balanceCol,
                         children: [
                           "\u20B3 ",
-                          formatBalance(pe.quantity)
+                          formatBalance(ge.quantity)
                         ]
-                      }, pe.unit + pe.quantity))
+                      }, ge.unit + ge.quantity))
                     ]
                   }) : null
                 ]
+              }) : jsxRuntimeExports.jsx("div", {
+                className: classMap.notFound,
+                children: z.label_empty
               })
             }) : null,
             o ? jsxRuntimeExports.jsx(Gated, {
