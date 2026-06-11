@@ -17,10 +17,13 @@ module.exports = function override(config, env) {
       }
     });
   });
-  // Fix web buffer
+  // Fix web buffer and node polyfills for Mesh SDK / webpack 5
   config.resolve.fallback = {
     buffer: require.resolve('buffer/'),
-    stream: false
+    crypto: require.resolve('crypto-browserify'),
+    stream: require.resolve('stream-browserify'),
+    util: require.resolve('util/'),
+    vm: false,
   }
   config.plugins.push(new webpack.ProvidePlugin({
     Buffer: ['buffer', 'Buffer'],
