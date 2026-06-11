@@ -10,6 +10,7 @@ use WPCC\Connect\Responses\Response;
 
 abstract class Base
 {
+	private string $mithril_aggregator = 'https://aggregator.release-mainnet.api.mithril.network/aggregator/signers/registered/';
 	protected string $base_uri;
 
 	protected string|null $api_key = null;
@@ -73,5 +74,23 @@ abstract class Base
 	public function getJsonUrl( string $url ): Response
 	{
 		return $this->get( $url );
+	}
+
+
+	// Mithril aggregator interface.
+
+	public function getMithrilSigners(): Response {
+		$block = $this->get( 'epochs/latest');
+		if ($block->success) {
+			$response = $this->get(  $this->mithril_aggregator . $block->response['epoch']);
+			if ($response->success) {
+				return new Response(
+					$response->success,
+					$response->response,
+					$response->message
+				);
+			}
+		}
+		return new Response(false, __('Unable to fetch Mithril signers', 'cardano-connect'));
 	}
 }

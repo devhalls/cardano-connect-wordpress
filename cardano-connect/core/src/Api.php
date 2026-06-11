@@ -2,6 +2,7 @@
 
 namespace WPCC;
 
+use WP_REST_Request;
 use WPCC\Connect\Base as ConnectBase;
 use WPCC\Connect\Responses\Response;
 
@@ -69,16 +70,16 @@ class Api extends Base {
 			[
 				'methods'             => 'POST',
 				'callback'            => [ $this, 'connect' ],
-				'permission_callback' => '__return_true'
+				'permission_callback' => [ $this, 'verifyConnectPermission' ],
 			]
 		);
 		register_rest_route(
 			$this->plugin_name,
 			'/disconnect/',
 			[
-				'methods'             => 'GET',
+				'methods'             => 'POST',
 				'callback'            => [ $this, 'disconnect' ],
-				'permission_callback' => '__return_true'
+				'permission_callback' => [ $this, 'verifyDisconnectPermission' ],
 			]
 		);
 		register_rest_route(
@@ -137,6 +138,15 @@ class Api extends Base {
 		);
 		register_rest_route(
 			$this->plugin_name,
+			'/dreps/(?P<id>[a-zA-Z0-9-]+)',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'getMithrilSigners' ],
+				'permission_callback' => '__return_true'
+			]
+		);
+		register_rest_route(
+			$this->plugin_name,
 			'/rewards/',
 			[
 				'methods'             => 'GET',
@@ -144,6 +154,40 @@ class Api extends Base {
 				'permission_callback' => '__return_true'
 			]
 		);
+
+		// Create an endpoint so we can fetch synced wp_blocks (patterns) for selection.
+		register_rest_route( $this->plugin_name, '/synced-patterns', [
+			'methods'             => 'GET',
+			'callback'            => function () {
+				$args  = [
+					'post_type'      => 'wp_block',
+					'post_status'    => 'publish',
+					'posts_per_page' => - 1,
+				];
+				$query = get_posts( $args );
+
+				return array_map( static function ( $post ) {
+					return [
+						'id'      => $post->ID,
+						'label'   => $post->post_title,
+						'content' => $post->post_content,
+						'value'   => $post->post_name,
+					];
+				}, $query );
+			},
+			'permission_callback' => '__return_true',
+		] );
+		register_rest_route( $this->plugin_name, '/render-block', [
+			'methods'             => 'POST',
+			'callback'            => [ $this, 'renderGatedBlock' ],
+			'permission_callback' => [ $this, 'verifyRestNonce' ],
+			'args'                => [
+				'slug' => [
+					'required' => true,
+					'type'     => 'string',
+				],
+			],
+		] );
 	}
 
 	// Locally provided.
@@ -169,6 +213,34 @@ class Api extends Base {
 		];
 	}
 
+	/**
+	 * Returns the rendered HTML for the blocks 'slug'.
+	 * Also returns 'passed' flag showing if the user has passed the conditions or not to show the gated content
+	 */
+	public function renderGatedBlock( WP_REST_Request $request ): array {
+		$slug    = sanitize_text_field( $request->get_param( 'slug' ) );
+		$args    = [
+			'post_type'      => 'wp_block',
+			'post_status'    => 'publish',
+			'posts_per_page' => - 1,
+			'name'           => $slug,
+		];
+		$query   = get_posts( $args );
+		$pattern = ! empty( $query ) && ! is_wp_error( $query ) ? $query[0] : null;
+		if ( $pattern && $pattern->post_name === $slug ) {
+			$html = do_blocks( $pattern->post_content );
+
+			// @todo set the 'passed' param using the connector
+			return $this->returnResponse( true, [
+				'html'   => $html,
+				'title'  => $pattern->post_title,
+				'passed' => true
+			] );
+		}
+
+		return $this->returnResponse( false, [], __( 'Pattern not found', 'cardano-connect' ) );
+	}
+
 	// Connect signer provider.
 
 	/**
@@ -187,6 +259,14 @@ class Api extends Base {
 	 * @route /cardano-connect/connect
 	 */
 	public function connect( $request ): array {
+		if ( ! $this->checkRateLimit( 'connect_' . $this->getClientIp(), 20, MINUTE_IN_SECONDS ) ) {
+			return $this->returnResponse(
+				false,
+				[],
+				__( 'Too many requests. Please try again later.', 'cardano-connect' )
+			);
+		}
+
 		// Define local data
 		$data          = [];
 		$success       = false;
@@ -396,7 +476,7 @@ class Api extends Base {
 		return $this->returnResponse(
 			false,
 			[],
-			$data->message
+			$data->message ?: ''
 		);
 	}
 
@@ -420,8 +500,6 @@ class Api extends Base {
 			$result->message
 		);
 	}
-
-	// Private helper methods.
 
 	/**
 	 * Get a list of dreps from the provider API.
@@ -492,9 +570,74 @@ class Api extends Base {
 		);
 	}
 
+	public function getMithrilSigners(): array {
+		$data = $this->connectDataProvider->getMithrilSigners();
+		if ( $data->success ) {
+			return $this->returnResponse(
+				true,
+				(array) $data->response
+			);
+		}
+
+		return $this->returnResponse(
+			false,
+			[]
+		);
+	}
+
 	// CRON Job methods
 
 	public function cron(): void {
 
+	}
+
+	/**
+	 * Verify REST nonce header for mutating routes.
+	 */
+	public function verifyRestNonce( WP_REST_Request $request ): bool {
+		$nonce = $request->get_header( 'X-WP-Nonce' );
+
+		return (bool) wp_verify_nonce( $nonce, 'wp_rest' );
+	}
+
+	/**
+	 * Permission callback for wallet connect requests.
+	 */
+	public function verifyConnectPermission( WP_REST_Request $request ): bool {
+		return $this->verifyRestNonce( $request );
+	}
+
+	/**
+	 * Permission callback for disconnect requests.
+	 */
+	public function verifyDisconnectPermission( WP_REST_Request $request ): bool {
+		return $this->verifyRestNonce( $request ) && is_user_logged_in();
+	}
+
+	/**
+	 * Basic rate limiting using transients.
+	 */
+	protected function checkRateLimit( string $key, int $limit, int $window ): bool {
+		$transient_key = 'wpcc_rl_' . md5( $key );
+		$count         = (int) get_transient( $transient_key );
+
+		if ( $count >= $limit ) {
+			return false;
+		}
+
+		set_transient( $transient_key, $count + 1, $window );
+
+		return true;
+	}
+
+	/**
+	 * Client IP for rate limiting.
+	 */
+	protected function getClientIp(): string {
+		if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		}
+
+		return 'unknown';
 	}
 }

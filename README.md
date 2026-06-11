@@ -26,7 +26,7 @@ We assume you have already installed wp-env using your preferred method or using
 
 * [node](https://nodejs.org/en) v20.13.1
 * [wp-env](https://developer.wordpress.org/block-editor/getting-started/devenv/) v10.2.0
-* [wp-scripts](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/) v27.9.0
+* [wp-scripts](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/) v32.4.0
 
 You can zip the plugin from the root directory using creating cardano-connect.zip
 
@@ -77,9 +77,9 @@ npm run build-pools
 React is used for the frontend Web3 components and development environment. React scripts and css is then included in the plugin using wp_register_scrtips and wp_register_styles as necessary.
 
 * [typescript](https://www.typescriptlang.org/) v5.5.3
-* [react](https://react.dev/) v18.2.0
-* [react-app-rewired](https://github.com/timarney/react-app-rewired) v2.2.1
-* [mesh.js](https://meshjs.dev) v1.5.2
+* [react](https://react.dev/) v18.3.1
+* [vite](https://vite.dev/) v6.4.0
+* [mesh.js](https://meshjs.dev) v1.9.0
 
 React nodes target block and shortcode HTML outputs defined in WordPress allowing us to bind various React nodes to user defined locations across their WordPress website.
 
@@ -93,21 +93,38 @@ npm install
 # Build output for WordPress to consume
 npm run build
 
-# Start the react dev server (no WordPress using mockData).
-npm run start
+# Start the Vite dev server (no WordPress; uses mock data in index.html).
+npm run dev
 ```
 
 ---
 
 ## Deployment
 
-Deployments are handled via the WordPress plugin repository. PRs accepted in this repository will be submitted to 
-the WordPress repo by the contributor team.
+GitHub Releases publish `cardano-connect.zip` when a version tag (e.g. `v1.1.0`) is pushed from `release/1.1.x`.
 
 ```
 # Zip files ready for a WordPress instalation
 npm run package
 ```
+
+### Optional constants and filters
+
+Define in `wp-config.php` before the plugin loads:
+
+```php
+define( 'WPCC_VERIFY_ENDPOINT', 'https://your-signer.example.com/' );
+define( 'WPCC_DISABLE_SETUP_WIZARD', true );
+```
+
+Filters:
+
+- `wpcc_verify_endpoint` — signature verification URL
+- `wpcc_load_options` — frontend label/options array (multilingual overrides)
+- `wpcc_disable_setup_wizard` — skip setup wizard on dashboard
+- `wpcc_force_enqueue_assets` — enqueue React on all frontend pages
+
+PRs accepted in this repository may also be submitted to the WordPress plugin repository by the contributor team.
 
 ---
 

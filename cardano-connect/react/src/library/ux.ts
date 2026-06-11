@@ -1,6 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {RootState} from "./state";
-import {useMemo} from "react";
 
 // Define the initial slice state
 const initialState: UxState = {

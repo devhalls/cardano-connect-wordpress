@@ -6,12 +6,17 @@ import {Asset as AssetComponent} from "./Asset";
 import {classMap, convertToApiAsset} from "../library/utils";
 import {Loader} from "./common/Loader";
 import {backendGetAsset} from "../library";
+import {Gated} from "./common/Gated";
 
 export const Assets = ({
-    perPage = 10, // if set to 0 pagination will be disabled
+    perPage = 10, // if set to 0, pagination will be disabled
     hideTitles = null,
     notFound = null,
-    whitelistString = null,
+    whitelist = null,
+    gated = null,
+    gatedPlaceholder = null,
+    gate = null,
+    gateHideComponent = null,
 }: ComponentAssets) => {
 
     // APP State
@@ -35,7 +40,7 @@ export const Assets = ({
 
     const filterAssets = useCallback(() => {
         const list: Asset[] = []
-        const acceptedLocal = whitelistString?.length ? whitelistString.split('\n').map(a => a.trim()) : []
+        const acceptedLocal = whitelist?.length ? whitelist.split('\n').map(a => a.trim()) : []
         const acceptedGlobal = options.assets_whitelist?.length ? options.assets_whitelist.split(' ').map(a => a.trim()) : []
         const accepted = acceptedLocal.length || acceptedGlobal.length ? [...acceptedLocal, ...acceptedGlobal] : null;
         for (let i = 0; i < assets.length; i++) {
@@ -54,7 +59,7 @@ export const Assets = ({
         setFilteredAssets(list)
         setTotal(list.length)
         filterPage(1, itemsPerPage).then()
-    }, [assets, options, whitelistString])
+    }, [assets, options, whitelist])
 
     const filterPage = useCallback(async (page: number, limit: number) => {
         if (!filteredAssets) {
@@ -88,7 +93,7 @@ export const Assets = ({
         setLoading(false)
     }, [filteredAssets, apiAssets])
 
-    // Set data on load
+    // Set data on a load
 
     useEffect(() => {
         if (user.connected && assets && assets.length) {
@@ -101,7 +106,7 @@ export const Assets = ({
     return user.connected ? (
         <div className={classMap.assetsContainer}>
             {perPage > 0 && (
-                <div className={classMap.pagination}>
+                <div className={classMap.paginator.container}>
                     <span>{currentPage} / {filteredAssets?.length > itemsPerPage ? Math.ceil(filteredAssets?.length / itemsPerPage) : 1}</span>
                     <button disabled={loading || currentPage <= 1}
                             onClick={() => filterPage(currentPage - 1, itemsPerPage)}>
@@ -118,17 +123,22 @@ export const Assets = ({
                 <Loader />
             ) : (
                 <>
-                    {pagedAssets?.length ? pagedAssets?.map((a, i) => (
-                        <AssetComponent
-                            key={i + a.fingerprint}
-                            asset={a}
-                            showTitle={!hideTitles && (!pagedAssets[i - 1] || a.policy_id !== pagedAssets[i - 1].policy_id)}
-                        />
-                    )) : (
-                        <div className={classMap.notFound}>
-                            {notFound || options.label_no_assets}
-                        </div>
-                    )}
+                    {!gated || (gated && !gateHideComponent) ? (
+                        <>
+                            {pagedAssets?.length ? pagedAssets?.map((a, i) => (
+                                <AssetComponent
+                                    key={i + a.fingerprint}
+                                    asset={a}
+                                    showTitle={!hideTitles && (!pagedAssets[i - 1] || a.policy_id !== pagedAssets[i - 1].policy_id)}
+                                />
+                            )) : (
+                                <div className={classMap.notFound}>
+                                    {notFound || options.label_no_assets}
+                                </div>
+                            )}
+                        </>
+                    ): null}
+                    {gated ? <Gated gated={gated} gatedPlaceholder={gatedPlaceholder} gate={gate}/> : null}
                 </>
             )}
         </div>

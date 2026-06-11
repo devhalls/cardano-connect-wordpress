@@ -1,0 +1,66 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import wasm from 'vite-plugin-wasm';
+import topLevelAwait from 'vite-plugin-top-level-await';
+
+const stubPath = path.resolve(
+	path.dirname( fileURLToPath( import.meta.url ) ),
+	'src/stubs/empty.js',
+);
+
+export default defineConfig({
+	plugins: [
+		wasm(),
+		topLevelAwait(),
+		react(),
+		nodePolyfills({
+			include: [ 'buffer', 'crypto', 'stream', 'util' ],
+			globals: {
+				Buffer: true,
+			},
+		} ),
+	],
+	resolve: {
+		alias: {
+			npm: stubPath,
+			dockerode: stubPath,
+		},
+	},
+	base: '/wp-content/plugins/cardano-connect/react/build/',
+	build: {
+		outDir: 'build',
+		emptyOutDir: true,
+		manifest: true,
+		rollupOptions: {
+			input: path.resolve(
+				path.dirname( fileURLToPath( import.meta.url ) ),
+				'src/index.tsx',
+			),
+			output: {
+				inlineDynamicImports: true,
+				entryFileNames: 'static/js/[name].[hash].js',
+				chunkFileNames: 'static/js/[name].[hash].js',
+				assetFileNames: ( assetInfo ) => {
+					const name = assetInfo.names?.[ 0 ] ?? assetInfo.name ?? '';
+
+					if ( name.endsWith( '.css' ) ) {
+						return 'static/css/[name].[hash][extname]';
+					}
+
+					if ( name.endsWith( '.wasm' ) ) {
+						return '[name].[hash][extname]';
+					}
+
+					return 'assets/[name].[hash][extname]';
+				},
+			},
+		},
+	},
+	server: {
+		port: 3000,
+		open: true,
+	},
+});

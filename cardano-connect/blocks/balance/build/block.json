@@ -20,5 +20,41 @@
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
   "style": "file:./style-index.css",
-  "render": "file:./render.php"
+  "render": "file:./../../shared/render.php",
+  "attributes": {
+    "show_address": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_stake_address": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_wallet": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_collateral": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_balance": {
+      "type": "boolean",
+      "default": true
+    },
+    "gated": {
+      "type": "string"
+    },
+    "gated_placeholder": {
+      "type": "string"
+    },
+    "gate": {
+      "type": "string",
+      "default": "none"
+    },
+    "gate_hide_component": {
+      "type": "boolean",
+      "default": false
+    }
+  }
 }

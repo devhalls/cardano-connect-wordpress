@@ -27,7 +27,8 @@ class Pool extends Base {
 		'retirement',
 		'metadata',
 		'metadata_extended',
-		'synced_at'
+		'synced_at',
+		'mithril_signer'
 	];
 	public function __construct(
 		/** @var string */
@@ -74,6 +75,8 @@ class Pool extends Base {
 		public PoolMetadataExtended|null $metadata_extended = null,
 		/** @var string|null */
 		public string|null $synced_at = null,
+		/** @var boolean|null */
+		public bool|null $mithril_signer = null,
 	) {}
 
 	/**

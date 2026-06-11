@@ -31,7 +31,10 @@ export const Drep = ({
     const [loading, setLoading] = useState(true)
     const [loadingAction, setLoadingAction] = useState(false)
     const [drepData, setDrepData] = useState<DrepData | null>(null)
-    const isComparing = useMemo(() => comparisons?.find(a => a && 'drep_id' in a && a.drep_id === drepId), [comparisons, comparisons])
+    const isComparing = useMemo(
+        () => comparisons?.find(a => a && 'drep_id' in a && a.drep_id === drepId),
+        [comparisons, comparisons, drepId]
+    )
 
     // Handlers
 
@@ -43,7 +46,7 @@ export const Drep = ({
 
     const handleSetCompare = useCallback(() => {
         dispatch(setCompareDreps(drepData))
-    }, [drepData])
+    }, [drepData, dispatch])
 
     // Helpers
 
@@ -64,7 +67,7 @@ export const Drep = ({
     }, [drepId])
 
     const userDelegated = useMemo(() =>
-        (user?.account?.active && user?.account?.drep_id === drepId), [user])
+        (user?.account?.active && user?.account?.drep_id === drepId), [user, drepId])
 
     // Get drep data on load
 

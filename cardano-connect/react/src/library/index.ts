@@ -2,7 +2,7 @@ import axios from "axios";
 import qs from "qs";
 import {mockApiAsset, mockApiDrep, mockApiDreps, mockApiPool, mockApiPools, mockOption, mockUser} from "./mock";
 
-const nodeEnv: string = process.env.NODE_ENV
+const nodeEnv: string = import.meta.env.MODE
 
 const instance = axios.create({
     baseURL: `/index.php?rest_route=/cardano-connect/`,
@@ -79,7 +79,7 @@ export async function backendConnect(data: {
 
 export async function backendDisconnect(nonce: string): Promise<AjaxResponse<null>> {
     instance.defaults.headers.common['X-WP-Nonce'] = nonce
-    return await get(`disconnect`);
+    return await post(`disconnect`);
 }
 
 export async function backendGetAsset(data: {
@@ -156,4 +156,12 @@ export async function backendGetDrep(data: {
     return nodeEnv === 'development'
         ? mockApiDrep(data.drepId)
         : await get(`dreps/${data.drepId}`)
+}
+
+export async function backendGetWordPressBlock(data: {
+    nonce: string,
+    slug: string
+}): Promise<AjaxResponse<{html: string; title: string; passed: boolean}>> {
+    instance.defaults.headers.common['X-WP-Nonce'] = data.nonce
+    return nodeEnv === 'development' ? mockOption : await post(`render-block`, { slug: data.slug });
 }

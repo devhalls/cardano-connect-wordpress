@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ruleset name="Cardano Connect">
+	<description>WordPress Coding Standards for Cardano Connect</description>
+	<file>./core/src</file>
+	<file>./cardano-connect.php</file>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<rule ref="WordPress"/>
+	<config name="minimum_supported_wp_version" value="6.1"/>
+	<config name="testVersion" value="8.0-"/>
+</ruleset>

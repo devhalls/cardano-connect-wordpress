@@ -34,6 +34,12 @@ export const translateError = (error: string): string => {
         },{
             match: 'no account set',
             replace: 'No account is set for connection, please enable a connection in your wallet then try again'
+        },{
+            match: '[browserwallet]',
+            replace: ''
+        },{
+            match: 'an error occurred during enable',
+            replace: ''
         }
     ]
     replacements.map(r => {
@@ -238,6 +244,7 @@ export const classMap = {
         container: 'wpcc-paginator-container',
         header: 'wpcc-paginator-header',
         body: 'wpcc-paginator-body',
+        table: 'wpcc-paginator-table',
         controls: {
             container: 'wpcc-paginator-controls-container',
             number: 'wpcc-paginator-controls-page',
@@ -264,6 +271,7 @@ export const classMap = {
     disconnected: 'connector-content connector-disconnected',
     list: 'connector-wallet-list wpcc-card',
     menu: 'connector-menu-list wpcc-card',
+    menuDownload: 'connector-menu-download',
     listButton: 'connector-list-button',
     listEmpty: 'connector-no-wallets',
     button: 'connector-button',
@@ -277,6 +285,7 @@ export const classMap = {
     balanceRow: 'wpcc-balance-row',
     balanceCol: 'wpcc-balance-col',
     balanceTotalRow: 'wpcc-balance-total-row wpcc-balance-row',
+    balanceEmpty: 'wpcc-balance-empty',
     // Asset list classes.
     assetsContainer: 'wpcc-assets-container',
     assetTitle: 'wpcc-assets-title',
@@ -313,12 +322,15 @@ export const classMap = {
     pool: 'wpcc-pool wpcc-card-dark',
     poolMini: 'wpcc-pool wpcc-pool-mini wpcc-card-dark',
     poolComparing: 'wpcc-pool-comparing',
+    poolError: 'wpcc-pool-error',
+    poolImageWrapper: 'wpcc-pool-image-wrapper',
     poolImage: 'wpcc-pool-image',
     poolContent: 'wpcc-pool-content',
     poolHeader: 'wpcc-pool-header',
     poolDescription: 'wpcc-pool-description',
     poolDescriptionIcon: 'wpcc-icon wpcc-icon-eye',
     poolHeaderRight: 'wpcc-pool-header-right',
+    poolHeaderLeft: 'wpcc-pool-header-left',
     poolBody: 'wpcc-pool-body',
     poolBodyBars: 'wpcc-pool-body-bars',
     poolTicker: 'wpcc-pool-ticker',
@@ -362,4 +374,16 @@ export const classMap = {
     plotClose: 'wpcc-plot-close wpcc-icon wpcc-icon-close',
     plotAdd: 'wpcc-plot-add wpcc-icon wpcc-icon-add',
     plotTitle: 'wpcc-plot-title',
+    // Tables
+    table: {
+        wrapper: 'wpcc-table-wrap',
+        tr: 'wpcc-tr',
+        th: 'wpcc-th',
+        tdImage: 'wpcc-td wpcc-td-image',
+        tdText: 'wpcc-td wpcc-td-text',
+        tdAction: 'wpcc-td wpcc-td-text'
+    },
+    // Gated wrappers
+    gated: 'wpcc-gated',
+    gatedContent: 'wpcc-card-dark'
 }

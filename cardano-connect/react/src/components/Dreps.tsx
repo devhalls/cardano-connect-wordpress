@@ -7,7 +7,7 @@ import {useAppSelector} from "../library/state";
 import {getOptionState} from "../library/option";
 
 export const Dreps = ({
-    whitelistString = null,
+    whitelist = null,
     perPage = 10, // Set to 0 to disable pagination
     notFound,
     dreps
@@ -18,8 +18,8 @@ export const Dreps = ({
     const options: OptionState = useAppSelector(getOptionState)
 
     const getDreps = async (page: number, perPage: number, filters?: Filter[]|null) => {
-        if (whitelistString) {
-            const drepIds = whitelistString?.length ? whitelistString.split('\n').map(a => a.trim()) : []
+        if (whitelist) {
+            const drepIds = whitelist?.length ? whitelist.split('\n').map(a => a.trim()) : []
             const formatted: Drep[] = drepIds.map(p => {
                 return {drep_id: p}
             })

@@ -20,6 +20,11 @@ import { useBlockProps } from '@wordpress/block-editor';
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
 import './editor.scss';
+import './../../shared/editor.scss';
+import Title from "../../shared/components/Title";
+import {CheckboxControl} from "@wordpress/components";
+import GatedControl from "../../shared/components/form/GatedControl";
+import Gated from "../../shared/components/Gated";
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -29,17 +34,87 @@ import './editor.scss';
  *
  * @return {Element} Element to render.
  */
-export default function Edit() {
+export default function Edit({ attributes, setAttributes, isSelected }) {
+
+	/**
+	 * Create an array of gated logic options.
+	 */
+	const gateOptions = [
+		{label: __('No condition, always show content'), value: 'none'},
+	]
+
 	return (
 		<div {...useBlockProps()}>
-			<div className={'balance-control'}>
-				<div className={'balance-title'}>
-					<div className={'balance-image'}></div>
-					<div className={'balance-text'}>
-						{__('Wallet and Account')}
-					</div>
-				</div>
-				<div className={'balance-placeholder'}></div>
+			<div className={`wpcc-block-control ${isSelected ? 'wpcc-block-control-edit' : ''}`}>
+				{isSelected ? (
+					<>
+						<Title title={'Cardano Wallet'} />
+						<CheckboxControl
+							__nextHasNoMarginBottom
+							label={__('Show address?')}
+							checked={attributes.show_address}
+							onChange={(value) => setAttributes({show_address: value})}
+						/>
+						<CheckboxControl
+							__nextHasNoMarginBottom
+							label={__('Show stake address?')}
+							checked={attributes.show_stake_address}
+							onChange={(value) => setAttributes({show_stake_address: value})}
+						/>
+						<CheckboxControl
+							__nextHasNoMarginBottom
+							label={__('Show wallet name?')}
+							checked={attributes.show_wallet}
+							onChange={(value) => setAttributes({show_wallet: value})}
+						/>
+						<CheckboxControl
+							__nextHasNoMarginBottom
+							label={__('Show wallet collateral?')}
+							checked={attributes.show_collateral}
+							onChange={(value) => setAttributes({show_collateral: value})}
+						/>
+						<CheckboxControl
+							__nextHasNoMarginBottom
+							label={__('Show wallet balance?')}
+							checked={attributes.show_balance}
+							onChange={(value) => setAttributes({show_balance: value})}
+						/>
+						<GatedControl
+							gated={attributes.gated}
+							gate_hide_component={attributes.gate_hide_component}
+							gated_placeholder={attributes.gated_placeholder}
+							gate={attributes.gate}
+							gateOptions={gateOptions}
+							setAttributes={setAttributes}
+						/>
+					</>
+				) : (
+					<>
+						<div className={'balance-placeholder'}>
+							<div className={`balance-placeholder-item ${attributes.show_address ? '' : 'hidden'}`}>
+								<span>{__('Address:')}</span> {__('addr1r...xy4cfn')}
+							</div>
+							<div className={`balance-placeholder-item ${attributes.show_stake_address ? '' : 'hidden'}`}>
+								<span>{__('Stake Address:')}</span> {__('stake1...ed73hf')}
+							</div>
+							<div className={`balance-placeholder-item ${attributes.show_wallet ? '' : 'hidden'}`}>
+								<span>{__('Wallet:')}</span> {__('Eternl')}
+							</div>
+							<div className={`balance-placeholder-item ${attributes.show_collateral ? '' : 'hidden'}`}>
+								<span>{__('Wallet collateral:')}</span> ₳{(Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000).toLocaleString()}
+							</div>
+							<div className={`balance-placeholder-item ${attributes.show_balance ? '' : 'hidden'}`}>
+								<span>{__('Balance:')}</span> ₳{(Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000).toLocaleString()}
+							</div>
+						</div>
+						<Gated
+							gateOptions={gateOptions}
+							gated_placeholder={attributes.gated_placeholder}
+							gated={attributes.gated}
+							gate={attributes.gate}
+						/>
+					</>
+				)}
 			</div>
 		</div>
 	);

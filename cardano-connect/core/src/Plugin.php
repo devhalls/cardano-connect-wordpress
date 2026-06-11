@@ -14,6 +14,7 @@ class Plugin extends Base {
 	 */
 	public function registerModules(): void {
 		( new Settings() )->run();
+		( new SetupWizard() )->run();
 		( new Assets() )->run();
 		( new Api() )->run();
 		if ( is_admin() ) {
@@ -34,6 +35,7 @@ class Plugin extends Base {
 		add_shortcode( 'cardano-connect-dreps', [ $this, 'registerDRepsShortcode' ] );
 		add_action( 'init', [ $this, 'registerModules' ] );
 		add_action( 'init', [ $this, 'registerCron' ] );
+		add_action( 'plugins_loaded', [ $this, 'maybeUpgrade' ] );
 
 		// WP event triggering the fetch batch process.
 		add_action( 'cardano_connect_cron_fetch_data', [ $this, 'cronFetchDataBatch' ] );
@@ -87,67 +89,92 @@ class Plugin extends Base {
 	/**
 	 * Include the connector shortcode template.
 	 */
-	public function registerConnectorShortcode(): string {
-		return $this->getTemplate( 'shortcode/cardano-connect-connector' );
+	public function registerConnectorShortcode( $attributes = [] ): string {
+		return $this->registerBlockShortcode( 'connector', $attributes );
+	}
+
+	/**
+	 * Register a blocks shortcode, reads params from the block.js file to pass to the template.
+	 *
+	 * @param string $name the name of the block folder
+	 * @param array $attributes
+	 *
+	 * @return string
+	 */
+	private function registerBlockShortcode( string $name, array $attributes = [] ): string {
+		Assets::requireFrontendAssets();
+
+		$file_path  = $this->plugin_path . 'blocks/' . $name . '/src/block.json';
+		$definition = [];
+		if ( file_exists( $file_path ) ) {
+			$metadata = wp_json_file_decode(
+				$file_path,
+				[ 'associative' => true ]
+			);
+			if ( ! empty( $metadata['attributes'] ) ) {
+				$definition = array_fill_keys(
+					array_keys( $metadata['attributes'] ),
+					null
+				);
+			}
+		}
+		$attributes = shortcode_atts(
+			$definition, $attributes
+		);
+
+		return $this->getTemplate(
+			'partial/block-shortcode',
+			[ 'name' => $name, 'attributes' => $attributes ]
+		);
 	}
 
 	/**
 	 * Include the assets shortcode template.
 	 */
 	public function registerAssetsShortcode( $attributes = [] ): string {
-		$formatted_attributes = shortcode_atts(
-			array(
-				'whitelist'   => null,
-				'per_page'    => null,
-				'hide_titles' => null,
-				'not_found'   => null,
-			), $attributes
-		);
+		$attributes['whitelist'] = isset( $attributes['whitelist'] )
+			? str_replace( ',', "\n", $attributes['whitelist'] )
+			: null;
 
-		return $this->getTemplate( 'shortcode/cardano-connect-assets', $formatted_attributes );
+		return $this->registerBlockShortcode( 'assets', $attributes );
 	}
 
 	/**
 	 * Include the balance shortcode template.
 	 */
-	public function registerBalanceShortcode(): string {
-		return $this->getTemplate( 'shortcode/cardano-connect-balance' );
+	public function registerBalanceShortcode( $attributes = [] ): string {
+		return $this->registerBlockShortcode( 'balance', $attributes );
 	}
 
 	/**
 	 * Include the pools shortcode template.
 	 */
 	public function registerPoolsShortcode( $attributes = [] ): string {
-		$formatted_attributes = shortcode_atts(
-			array(
-				'whitelist' => null,
-				'per_page'  => null,
-				'not_found' => null,
-				'view' => null,
-			), $attributes
-		);
+		$attributes['whitelist'] = isset( $attributes['whitelist'] )
+			? str_replace( ',', "\n", $attributes['whitelist'] )
+			: null;
 
-		return $this->getTemplate( 'shortcode/cardano-connect-pools', $formatted_attributes );
+		return $this->registerBlockShortcode( 'pools', $attributes );
 	}
 
 	/**
 	 * Include the DReps shortcode template.
 	 */
 	public function registerDRepsShortcode( $attributes = [] ): string {
-		$formatted_attributes = shortcode_atts(
-			array(
-				'whitelist' => null,
-				'per_page'  => null,
-				'not_found' => null,
-			), $attributes
-		);
+		$attributes['whitelist'] = isset( $attributes['whitelist'] )
+			? str_replace( ',', "\n", $attributes['whitelist'] )
+			: null;
 
-		return $this->getTemplate( 'shortcode/cardano-connect-dreps', $formatted_attributes );
+		return $this->registerBlockShortcode( 'dreps', $attributes );
 	}
 
+	/**
+	 * Register plugin post types.
+	 */
 	public function registerPostTypes(): void {
-		$stake_pool     = new StakePool();
-		$testnet_suffix = $this->getSetting( Base::SETTING_PREFIX . 'mainnet_active' ? '' : '_testnet' );
+		$stake_pool       = new StakePool();
+		$mainnet_active   = $this->getSetting( Base::SETTING_PREFIX . 'mainnet_active' );
+		$testnet_suffix   = $mainnet_active ? '' : '_testnet';
 		if ( $this->getSetting( Base::SETTING_PREFIX . 'pools_data_source' . $testnet_suffix ) === 'local_wp' ) {
 			register_post_type(
 				$stake_pool::NAME,
@@ -163,20 +190,60 @@ class Plugin extends Base {
 	 * @return void
 	 */
 	public function onActivate(): void {
-		// Set WP options
+		$this->settings = $this->loadSettings();
+
 		foreach ( $this->settings as $setting ) {
-			$settings_fields = array_column(
-				$setting['sections'],
-				'fields'
-			)[0];
-			$defaults        = [];
-			foreach ( $settings_fields as $name => $settings_field ) {
-				if ( isset( $settings_field['default'] ) ) {
-					$defaults[ $name ] = $settings_field['default'];
+			$defaults = [];
+			foreach ( $setting['sections'] as $section ) {
+				foreach ( $section['fields'] as $name => $settings_field ) {
+					if ( isset( $settings_field['default'] ) ) {
+						$defaults[ $name ] = $settings_field['default'];
+					}
 				}
 			}
 			add_option( $setting['name'], $defaults );
 		}
+
+		update_option( 'wpcc_db_version', WPCC_VERSION );
+		delete_option( SetupWizard::OPTION_COMPLETED );
+	}
+
+	/**
+	 * Remove deprecated option keys on upgrade without overwriting user values.
+	 *
+	 * @return void
+	 */
+	public function maybeUpgrade(): void {
+		$installed = get_option( 'wpcc_db_version', '0' );
+
+		if ( version_compare( $installed, WPCC_VERSION, '>=' ) ) {
+			return;
+		}
+
+		if ( empty( Base::DEPRECATED_SETTING_KEYS ) ) {
+			update_option( 'wpcc_db_version', WPCC_VERSION );
+
+			return;
+		}
+
+		$this->settings = $this->loadSettings();
+
+		foreach ( $this->settings as $setting ) {
+			$option_name = $setting['name'];
+			$values      = get_option( $option_name );
+
+			if ( ! is_array( $values ) ) {
+				continue;
+			}
+
+			foreach ( Base::DEPRECATED_SETTING_KEYS as $deprecated_key ) {
+				unset( $values[ $deprecated_key ] );
+			}
+
+			update_option( $option_name, $values );
+		}
+
+		update_option( 'wpcc_db_version', WPCC_VERSION );
 	}
 
 	/**

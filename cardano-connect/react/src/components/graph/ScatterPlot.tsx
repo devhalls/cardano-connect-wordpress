@@ -32,6 +32,7 @@ export const ScatterPlot = ({
     data.map(a => {
         maxX = a.x > maxX ? a.x : maxX
         maxY = a.y > maxY ? a.y : maxY
+        return a
     })
     maxX = axisMax ? axisMax(maxX) : maxX
     maxY = axisMax ? axisMax(maxY) : maxY
@@ -75,7 +76,11 @@ export const ScatterPlot = ({
             });
     }, [
         xScale,
-        yScale
+        yScale,
+        boundsHeight,
+        boundsWidth,
+        margin,
+        scaleMax
     ]);
 
     // Methods

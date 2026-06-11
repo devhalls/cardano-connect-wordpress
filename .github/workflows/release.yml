@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            cardano-connect/blocks/package-lock.json
+            cardano-connect/react/package-lock.json
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          extensions: json
+
+      - name: Install Composer dependencies
+        working-directory: cardano-connect/core
+        run: composer install --no-interaction --prefer-dist --no-dev
+
+      - name: Install and build blocks
+        working-directory: cardano-connect/blocks
+        run: |
+          npm ci
+          npm run build-connector
+          npm run build-assets
+          npm run build-balance
+          npm run build-pools
+          npm run build-dreps
+
+      - name: Install and build React
+        working-directory: cardano-connect/react
+        run: |
+          npm ci
+          npm run build
+
+      - name: Package plugin
+        run: npm run package
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: cardano-connect.zip

@@ -54,7 +54,7 @@ export const CompareModal = () => {
             label: options.label_paginate_search_metadata,
             type: 'checkbox',
             key: 'no_metadata',
-            value: true,
+            value: false,
             order: 2,
         },
         {
@@ -100,19 +100,31 @@ export const CompareModal = () => {
     const getPoolStats = useCallback(async () => {
         setLoading(true)
         setAllPoolStats(null)
-        const data = await backendGetPoolsStats({
-            nonce: wpCardanoConnect?.nonce,
-            filters: comparePoolFilters
-        })
-        if (data.success) {
-            setAllPoolStats(data.data.items)
-        } else {
+        setViews(null)
+        try {
+            const data = await backendGetPoolsStats({
+                nonce: wpCardanoConnect?.nonce,
+                filters: comparePoolFilters
+            })
+            if (data.success) {
+                setAllPoolStats(data.data.items)
+            } else {
+                setAllPoolStats([])
+                dispatch(setMessage({
+                    message: translateError(data.message),
+                    type: 'error'
+                }))
+            }
+        } catch (e: any) {
+            setAllPoolStats([])
             dispatch(setMessage({
-                message: translateError(data.message),
+                message: translateError(e?.message || 'Failed to load pool data'),
                 type: 'error'
             }))
+        } finally {
+            setLoading(false)
         }
-    }, [comparePoolFilters])
+    }, [comparePoolFilters, dispatch])
 
     // Action handlers
 
@@ -142,7 +154,7 @@ export const CompareModal = () => {
     // Load view data after fetching data
 
     useEffect(() => {
-        if (loading || !allPoolStats) {
+        if (compareModal !== 'pools' || loading || allPoolStats === null) {
             return
         }
         const axisX = {
@@ -330,21 +342,36 @@ export const CompareModal = () => {
         }
         setViews(viewConfig)
         setLoading(false)
-    }, [loading, comparePools, allPoolStats]);
+    }, [compareModal, loading, comparePools, allPoolStats]);
 
-    // Load data on mount.
+    const blockView = {
+        enabled: true,
+        key: 'block',
+        type: 'block',
+        icon: 'grid',
+        title: 'Favourite pools',
+        descriptionShort: 'Your favourite pools',
+    }
+
+    // Load data when the modal opens.
 
     useEffect(() => {
         if (compareModal === 'pools') {
-            getPoolStats().then(() => setLoading(false))
+            getPoolStats()
+        } else if (compareModal === 'dreps') {
+            setLoading(false)
+            setAllPoolStats(null)
+            setViews([blockView])
+            setSelectedView(blockView)
+        } else {
+            setLoading(false)
         }
+
         if (compareModal) {
             document.body.classList.add('wpcc-modal-open');
         } else {
             document.body.classList.remove('wpcc-modal-open');
         }
-
-        // Set dimensions and respond to window resize
 
         setContainerWidth(Math.max(window.innerWidth - 72, minWidth))
         setContainerHeight(Math.max(window.innerHeight - 212, minHeight))
@@ -359,19 +386,42 @@ export const CompareModal = () => {
         }
     }, [compareModal, getPoolStats, minWidth, minHeight]);
 
+    // Close modal if compare list becomes empty.
+
+    useEffect(() => {
+        if (compareModal === 'pools' && !comparePools?.length) {
+            handleClose()
+        }
+        if (compareModal === 'dreps' && !compareDreps?.length) {
+            handleClose()
+        }
+    }, [compareModal, comparePools?.length, compareDreps?.length]);
+
+    const poolCompareCount = comparePools?.length ?? 0
+    const drepCompareCount = compareDreps?.length ?? 0
+    const hasCompareItems = poolCompareCount > 0 || drepCompareCount > 0
+
+    if (!hasCompareItems) {
+        return null
+    }
+
     return (
         <>
             <div className={classMap.compareButtonContainer}>
-                <button
-                    className={classMap.compareButton}
-                    onClick={() => dispatch(setCompareModal('pools'))}>
-                    {options.label_compare_view_pools}
-                </button>
-                {compareDreps?.length ? <button
-                    className={classMap.compareButton}
-                    onClick={() => dispatch(setCompareModal('dreps'))}>
-                    {options.label_compare_view_dreps} ({compareDreps.length})
-                </button> : null}
+                {poolCompareCount > 0 ? (
+                    <button
+                        className={classMap.compareButton}
+                        onClick={() => dispatch(setCompareModal('pools'))}>
+                        {options.label_compare_view_pools} ({poolCompareCount})
+                    </button>
+                ) : null}
+                {drepCompareCount > 0 ? (
+                    <button
+                        className={classMap.compareButton}
+                        onClick={() => dispatch(setCompareModal('dreps'))}>
+                        {options.label_compare_view_dreps} ({drepCompareCount})
+                    </button>
+                ) : null}
             </div>
             {compareModal ? (
                 <div className={classMap.modal}>
@@ -400,25 +450,30 @@ export const CompareModal = () => {
                         {(loading || !views) ? <Loader/> : (
                             <>
                                 {filters ? (
-                                    <div className={'classMap.paginationFiltersContainer'}>
-                                        {filters?.sort((a, b) => a.order < b.order ? -1 : 1)?.map((f) =>
-                                            <Filter
-                                                key={f.key}
-                                                prefix={'compare-filters-'}
-                                                filter={updatedFilters?.find(g => g.key === f.key) || f}
-                                                setFilter={(f) => {
-                                                    const updated = updatedFilters.filter(g => g.key !== f.key)
-                                                    setUpdatedFilters([...updated, f])
-                                                }}
-                                            />
-                                        )}
-                                        <div className={'classMap.paginationFiltersButtons'}>
-                                            <button
-                                                className={`${loading || JSON.stringify(updatedFilters) === JSON.stringify(filters) ? 'classMap.paginationUpdateDisabled' : 'classMap.paginationUpdate'}`}
-                                                disabled={loading || JSON.stringify(updatedFilters) === JSON.stringify(filters)}
-                                                onClick={() => handleUpdateFilter(updatedFilters)}>
-                                                {options.label_paginate_search_update}
-                                            </button>
+                                    <div className={classMap.paginator.header}>
+                                        <div className={classMap.paginator.filters.container}>
+                                            <div className={classMap.paginator.filters.list}>
+                                                {filters?.sort((a, b) => a.order < b.order ? -1 : 1)?.map((f) =>
+                                                    <Filter
+                                                        key={f.key}
+                                                        prefix={'compare-filters-'}
+                                                        filter={updatedFilters?.find(g => g.key === f.key) || f}
+                                                        setFilter={(f) => {
+                                                            const updated = updatedFilters.filter(g => g.key !== f.key)
+                                                            setUpdatedFilters([...updated, f])
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className={classMap.paginator.filters.buttons}>
+                                                <button
+                                                    className={`${classMap.paginator.filters.update}`}
+                                                    disabled={loading || JSON.stringify(updatedFilters) === JSON.stringify(filters)}
+                                                    onClick={() => handleUpdateFilter(updatedFilters)}>
+                                                    {options.label_paginate_search_update}
+                                                </button>
+                                                <span className={classMap.paginator.filters.item}>{allPoolStats.length} {options.label_paginate_items}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : null}

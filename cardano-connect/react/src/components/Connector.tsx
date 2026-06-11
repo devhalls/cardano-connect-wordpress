@@ -3,6 +3,7 @@ import {useWallet, useWalletList} from "@meshsdk/react";
 import {backendDisconnect, backendGetUser, backendConnect, backendGetOptions} from "../library";
 import {Wallet} from "@meshsdk/core";
 import {classMap, translateError, trimAddress, ucFirst} from "../library/utils";
+import {getWalletDownloadUrl, hasBrowserWallet, isWalletExtensionError} from "../library/wallet";
 import {useAppDispatch, useAppSelector} from "../library/state";
 import {
     getUserNetwork,
@@ -30,35 +31,80 @@ export const Connector = ({}: ComponentConnector) => {
     // Connector state
 
     const wallets = useWalletList()
+    const walletExtensionAvailable = hasBrowserWallet(wallets)
     const { connect, disconnect, wallet, name, error, connected  } = useWallet()
     const [hideWalletList, setHideWalletList] = useState<boolean>(true)
     const [mounted, setMounted] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(true)
     const [authenticated, setAuthenticated] = useState<boolean>(false)
     const [hideMenu, setHideMenu] = useState<boolean>(true)
+    const [walletExtensionMissing, setWalletExtensionMissing] = useState<boolean>(false)
 
     // Helpers
 
-    const onError = (message: string) => {
-        dispatch(setMessage({
-            message: translateError(message),
+    const formatErrorMessage = (message: string): string => {
+        if ( isWalletExtensionError( message ) ) {
+            return options?.label_empty || message
+        }
+
+        return translateError( message )
+    }
+
+    const onError = (message: string, keepSession = false): void => {
+        const displayMessage = formatErrorMessage( message )
+
+        if ( isWalletExtensionError( message ) ) {
+            setWalletExtensionMissing( true )
+            setLoading( false )
+
+            if ( displayMessage ) {
+                dispatch( setMessage( {
+                    message: displayMessage,
+                    type: 'error'
+                } ) )
+            }
+
+            if ( keepSession || authenticated ) {
+                return
+            }
+        }
+
+        dispatch( setMessage( {
+            message: displayMessage,
             type: 'error'
-        }))
-        setAuthenticated(false)
-        dispatch(resetUserState())
-        setLoading(false)
+        } ) )
+        setAuthenticated( false )
+        dispatch( resetUserState() )
+        setLoading( false )
         disconnect()
     }
+
+    const renderDownloadWalletLink = (className: string, walletName?: string | null) => (
+        <a
+            className={className}
+            href={getWalletDownloadUrl( walletName )}
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            {options.label_connect}
+        </a>
+    )
 
     // Click handlers
 
     const onClickButton = () => {
         dispatch(resetMessageState())
+        if ( authenticated ) {
+            setHideMenu(!hideMenu)
+            return
+        }
+
         setHideWalletList(!hideWalletList)
     }
 
     const onClickConnect = async (wallet: Wallet): Promise<void> => {
         setLoading(true)
+        setWalletExtensionMissing(false)
         try {
             await connect(wallet.name)
             setHideWalletList(true)
@@ -123,15 +169,22 @@ export const Connector = ({}: ComponentConnector) => {
     }, [])
 
     const connectWallet = useCallback(async (walletName: string): Promise<boolean> => {
+        if ( ! hasBrowserWallet( wallets ) ) {
+            setWalletExtensionMissing( true )
+            setLoading( false )
+            return false
+        }
+
         try {
             await connect(walletName)
             setLoading(false)
+            setWalletExtensionMissing(false)
             return true
         } catch (e: any) {
-            onError(e.message)
+            onError(e.message, true)
             return false
         }
-    }, [])
+    }, [wallets, connect])
 
     const signMessage = useCallback(async (message: string): Promise<boolean> => {
         try {
@@ -163,10 +216,10 @@ export const Connector = ({}: ComponentConnector) => {
                 return connectRes.success
             }
         } catch (e: any) {
-            onError(e.message)
+            onError(e.message, authenticated)
             return false
         }
-    }, [user, wallet, name])
+    }, [user, wallet, name, authenticated, options])
 
     const checkNetworkState = useCallback(async (checkPrompts = false): Promise<boolean> => {
         try {
@@ -204,11 +257,11 @@ export const Connector = ({}: ComponentConnector) => {
                 return false
             }
             return true
-        } catch (e) {
-            onError(e.message)
+        } catch (e: any) {
+            onError(e.message, authenticated)
             return false
         }
-    }, [wallet, options])
+    }, [wallet, options, user, authenticated])
 
     const startSign = useCallback(async (): Promise<boolean> => {
         try {
@@ -221,11 +274,11 @@ export const Connector = ({}: ComponentConnector) => {
                 return true
             }
             return false
-        } catch (e) {
-            onError(e.message)
+        } catch (e: any) {
+            onError(e.message, authenticated)
             return false
         }
-    }, [wallet, checkNetworkState, signMessage])
+    }, [wallet, checkNetworkState, signMessage, authenticated])
 
     // Fetch options and the authenticated user data on mount
 
@@ -235,13 +288,20 @@ export const Connector = ({}: ComponentConnector) => {
         }
     }, [mounted, mountData]);
 
+    useEffect(() => {
+        if ( mounted && ! walletExtensionAvailable ) {
+            setWalletExtensionMissing( true )
+            setLoading( false )
+        }
+    }, [mounted, walletExtensionAvailable]);
+
     // Check if user is authenticated and try to wallet connect
 
     useEffect(() => {
-        if (!connected && mounted && user.web3?.cardano_connect_wallet) {
+        if (!connected && mounted && user.web3?.cardano_connect_wallet && walletExtensionAvailable) {
             connectWallet(user.web3.cardano_connect_wallet).then()
         }
-    }, [mounted, connected, user, connectWallet]);
+    }, [mounted, connected, user, connectWallet, walletExtensionAvailable]);
 
     // Check network if already authenticated
 
@@ -268,23 +328,30 @@ export const Connector = ({}: ComponentConnector) => {
             disconnectMap.map(m => {
                 if (message.includes(m)) {
                     errorSent = true;
-                    onError(message)
+                    onError(message, authenticated)
                 }
             })
             if (!errorSent) {
-                dispatch(setMessage({
-                    type: 'error',
-                    message: translateError((error as any).toString()),
-                }))
+                if ( isWalletExtensionError( message ) ) {
+                    onError( message, authenticated )
+                } else {
+                    dispatch(setMessage({
+                        type: 'error',
+                        message: formatErrorMessage( message ),
+                    }))
+                    setLoading( false )
+                }
             }
             setLoading(false)
         }
     }, [error]);
 
+    const showDownloadWallet = !walletExtensionAvailable || walletExtensionMissing
+
     return (
         <div className={classMap.container}>
             <div className={authenticated ? classMap.connected : classMap.disconnected}>
-                <button className={classMap.button} onClick={() => authenticated ? setHideMenu(!hideMenu) : onClickButton()}>
+                <button className={classMap.button} onClick={onClickButton}>
                     <span className={classMap.buttonIcon}></span>
                     {loading ? (
                         <span className={classMap.buttonContent}>
@@ -316,14 +383,25 @@ export const Connector = ({}: ComponentConnector) => {
                                 </button>
                             ))
                         ) : (
-                            <div className={classMap.listEmpty}>{options?.label_empty}</div>
+                            <>
+                                <div className={classMap.listEmpty}>{options?.label_empty}</div>
+                                {renderDownloadWalletLink( classMap.listButton, user?.web3?.cardano_connect_wallet )}
+                            </>
                         )}
                     </div>
                 )}
                 {!hideMenu && (
                     <div className={classMap.menu}>
-                        <a href={options.login_redirect} title={'Wallet'}>Wallet</a>
-                        <div onClick={onClickDisconnect}>{options.label_disconnect}</div>
+                        {authenticated && options.login_redirect ? (
+                            <a href={options.login_redirect} title={'Wallet'}>Wallet</a>
+                        ) : null}
+                        {showDownloadWallet ? renderDownloadWalletLink(
+                            classMap.menuDownload,
+                            user?.web3?.cardano_connect_wallet
+                        ) : null}
+                        {authenticated ? (
+                            <div onClick={onClickDisconnect}>{options.label_disconnect}</div>
+                        ) : null}
                     </div>
                 )}
             </div>

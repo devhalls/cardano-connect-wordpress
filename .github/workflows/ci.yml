@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/**
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release/**
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            cardano-connect/blocks/package-lock.json
+            cardano-connect/react/package-lock.json
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+          extensions: json
+
+      - name: Install Composer dependencies
+        working-directory: cardano-connect/core
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Install block dependencies
+        working-directory: cardano-connect/blocks
+        run: npm ci
+
+      - name: Build blocks
+        working-directory: cardano-connect/blocks
+        run: |
+          npm run build-connector
+          npm run build-assets
+          npm run build-balance
+          npm run build-pools
+          npm run build-dreps
+
+      - name: Install React dependencies
+        working-directory: cardano-connect/react
+        run: npm ci
+
+      - name: Build React
+        working-directory: cardano-connect/react
+        run: npm run build
+
+      - name: Start wp-env
+        run: npx @wordpress/env start
+
+      - name: Run PHPUnit
+        run: npx @wordpress/env run tests-cli --env-cwd=wp-content/plugins/cardano-connect/core vendor/bin/phpunit -c ../phpunit.xml.dist
+
+      - name: Plugin Check
+        run: |
+          npx @wordpress/env run cli wp plugin install plugin-check --activate
+          npx @wordpress/env run cli wp plugin check cardano-connect --error-severity=7 --warning-severity=6
+
+      - name: Package plugin zip
+        run: npm run package
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardano-connect
+          path: cardano-connect.zip

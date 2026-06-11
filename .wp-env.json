@@ -1,6 +1,7 @@
 {
-  "port": 8888,
+  "port": 4002,
   "phpVersion": "8.2",
+  "testsEnvironment": true,
   "config": {
     "WP_DEBUG": true,
     "WP_DEBUG_DISPLAY": true,

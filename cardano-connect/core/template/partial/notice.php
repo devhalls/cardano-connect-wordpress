@@ -11,7 +11,7 @@ if (!empty($this->getSetting( Base::SETTING_PREFIX . 'mainnet_active'))) : ?>
         <p><?php esc_html_e("Users can will now be allowed to connect with their Mainnet and Testnet wallets. Please read the below notes for ensuring users Testnet accounts are linked to the user Mainnet accounts if required.", 'cardano-connect') ?></p>
         <h4><?php esc_html_e("Linking Mainnet and Testnet accounts", 'cardano-connect') ?></h4>
         <p><?php esc_html_e("When you activate Mainnet your users will also be able to connect with their Mainnet accounts. If the user is already connected with their Testnet account before switching networks and re-connecting with their Mainnet account, this will automatically associate the 2 network accounts and allow you to track cross network activity.", 'cardano-connect') ?></p>
-        <a class="button button-primary" target="_blank" href="<?php echo esc_html(WPCC\Base::PLUGIN_GUIDE) ?>"><?php esc_html_e("Using Cardano Connect", 'cardano-connect') ?></a>
+        <a class="button button-primary" target="_blank" href="<?php echo esc_url(WPCC\Base::PLUGIN_GUIDE) ?>"><?php esc_html_e("Using Cardano Connect", 'cardano-connect') ?></a>
     </div>
 <?php else : ?>
     <div class="wpcc-section wpcc-section-warning">
@@ -31,6 +31,6 @@ if (!empty($this->getSetting( Base::SETTING_PREFIX . 'mainnet_active'))) : ?>
             <li><?php esc_html_e("Go to your wallet and change the network to Mainnet.", 'cardano-connect') ?></li>
             <li><?php esc_html_e("Go to your wallet and change the network to Mainnet.", 'cardano-connect') ?></li>
         </ol>
-        <a class="button button-primary" target="_blank" href="<?php echo esc_html(WPCC\Base::PLUGIN_GUIDE) ?>"><?php esc_html_e("Using Cardano Connect", 'cardano-connect') ?></a>
+        <a class="button button-primary" target="_blank" href="<?php echo esc_url(WPCC\Base::PLUGIN_GUIDE) ?>"><?php esc_html_e("Using Cardano Connect", 'cardano-connect') ?></a>
     </div>
 <?php endif ?>

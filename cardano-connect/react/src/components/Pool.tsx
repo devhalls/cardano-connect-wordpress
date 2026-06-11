@@ -1,211 +1,74 @@
-import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {
-    classMap,
-    formatBalance,
-    formatPercentageFromDecimal,
-    formatPercentageFromBig,
-    trimAddress
-} from "../library/utils";
+import React, {useState} from "react";
+import {classMap, formatBalance, trimAddress} from "../library/utils";
 import {Tooltip} from 'react-tooltip'
 import {Copy} from "./common/Copy";
-import {backendGetPool} from "../library";
-import {useAppDispatch, useAppSelector} from "../library/state";
+import {useAppSelector} from "../library/state";
 import {getOptionState} from "../library/option";
 import {Loader} from "./common/Loader";
 import {Bar} from "./common/Bar";
 import {Stats} from "./common/Stats";
-import {LinkIcon} from "./common/LinkIcon";
 import {getUserState} from "../library/user";
-import {getUxComparePools, setComparePools} from "../library/ux";
+import usePool from "../hooks/pool";
+import {Socials} from "./common/Socials";
+import {PoolImage} from "./common/PoolImage";
 
 export const Pool = ({
-    poolId,
-    index,
-    delegateStake,
-    pool
-}: ComponentPool) => {
+     poolId,
+     index,
+     pool
+ }: ComponentPool) => {
 
     // APP State
 
-    const dispatch = useAppDispatch()
     const user: UserState = useAppSelector(getUserState)
     const options: OptionState = useAppSelector(getOptionState)
-    const comparisons: UxState['comparePools'] = useAppSelector(getUxComparePools)
 
     // Local state
 
-    const [loading, setLoading] = useState(true)
-    const [loadingAction, setLoadingAction] = useState(false)
-    const [poolData, setPoolData] = useState<PoolData | null>(null)
+    const {
+        loading,
+        loadingAction,
+        poolData,
+        delegateToPool,
+        addToCompare,
+        poolPledgePercent,
+        poolSaturationPercent,
+        userDelegated,
+        isSaturated,
+        isNoPledged,
+        isComparing,
+    } = usePool(poolId, pool)
     const [showDescription, setShowDescription] = useState(false)
-    const isComparing = useMemo(() =>
-        comparisons?.find(a => a && 'pool_id' in a && a.pool_id === poolId),
-        [comparisons, poolId]
-    )
-
-    // Handlers
-
-    const handleDelegate = async () => {
-        setLoadingAction(true)
-        await delegateStake(poolId)
-        setLoadingAction(false)
-    }
-
-    const handleSetCompare = useCallback(() => {
-        dispatch(setComparePools(poolData))
-    }, [dispatch, poolData])
-
-    // Helpers
-
-    const getPool = useCallback(async () => {
-        if (pool) {
-            setPoolData(pool)
-        } else {
-            setLoading(true)
-            const data = await backendGetPool({
-                nonce: wpCardanoConnect?.nonce,
-                poolId
-            })
-            if (data.success) {
-                setPoolData(data.data)
-            }
-        }
-        setLoading(false)
-    }, [poolId, pool])
-
-    const poolPledgePercent = useMemo<number>(() =>
-        formatPercentageFromBig(poolData?.live_pledge, poolData?.declared_pledge), [poolData])
-    const poolSaturationPercent = useMemo<number>(() =>
-        formatPercentageFromDecimal(poolData?.live_saturation), [poolData])
-    const userDelegated = useMemo(() =>
-        (user?.account?.active && user?.account?.pool_id === poolId), [user, poolId])
-    const isSaturated = useMemo(() =>
-        ((poolData?.live_saturation ? poolData?.live_saturation * 100 : 0) > 100), [poolData])
-    const isNoPledged = useMemo(() =>
-        (poolPledgePercent ? poolPledgePercent < 100 : true), [poolPledgePercent])
-
-    // Get pool data on load
-
-    useEffect(() => {
-        getPool().then()
-    }, [getPool])
-
     return (
-        <div key={poolId + '-' + index} className={`${classMap.pool} pool-${poolId} ${isComparing ? classMap.poolComparing : null}`}>
-            {loading ? <Loader/> : !poolData ?
+        <div className={`${classMap.pool} pool-index-${index} pool-${poolId} ${isComparing ? classMap.poolComparing : null}`}>
+            {loading ? (
+                <Loader/>
+            ) : !poolData ? (
                 <div className={classMap.notFound}>
-                    {options.label_no_pool}<br/><Copy text={poolId} />
-                </div> :
+                    {options.label_no_pool}<br/><Copy text={poolId}/>
+                </div>
+            ) : (
                 <div className={classMap.poolContent}>
                     <div className={classMap.poolHeader}>
-                        <div className={classMap.poolImage}>
-                            <img
-                                src={poolData.metadata_extended?.info?.url_png_icon_64x64 || poolData.metadata_extended?.info?.url_png_logo || options.assets_placeholder}
-                                alt={poolId}
-                            />
-                        </div>
-                        {poolData.metadata?.ticker ? (
-                            <div>
-                                <Copy text={poolData.metadata.ticker} className={classMap.poolTicker}/>
-                                <div className={classMap.poolName}>
-                                    <Copy text={poolData.metadata.name} />
-                                    {poolData.metadata.description ? <span className={classMap.poolDescriptionIcon}
-                                           onClick={() => setShowDescription(!showDescription)}></span>: null}
+                        <div className={classMap.poolHeaderLeft}>
+                            <PoolImage poolId={poolId} poolData={poolData} isNoPledged={isNoPledged} isSaturated={isSaturated} />
+                            {poolData.metadata?.ticker ? (
+                                <div>
+                                    <Copy text={poolData.metadata.ticker} className={classMap.poolTicker}/>
+                                    <div className={classMap.poolName}>
+                                        <Copy text={poolData.metadata.name}/>
+                                        {poolData.metadata.description ? (
+                                            <span
+                                                className={classMap.poolDescriptionIcon}
+                                                onClick={() => setShowDescription(!showDescription)}
+                                            />
+                                        ) : null }
+                                    </div>
                                 </div>
-                            </div>
-                        ) : null}
+                            ) : null}
+                        </div>
                         <div className={classMap.poolHeaderRight}>
-                            <div className={classMap.poolSocial}>
-                                {poolData.retirement?.length
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={poolData.retirement?.length === 1 ? options.label_pool_retiring : options.label_pool_retired}
-                                        title={poolData.metadata?.name || poolId}
-                                        icon={'retired'}
-                                        url={poolData.metadata?.homepage}
-                                    /> : null}
-                                {poolData.metadata?.homepage
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'Website'}
-                                        title={poolData.metadata?.name || poolId}
-                                        icon={'link'}
-                                        url={poolData.metadata?.homepage}
-                                    />
-                                    : null}
-                                {poolData.metadata_extended?.info?.social?.twitter_handle
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'Twitter'}
-                                        title={'Twitter'}
-                                        icon={'twitter'}
-                                        url={'https://x.com/' + poolData.metadata_extended?.info?.social?.twitter_handle}
-                                    />
-                                    : null}
-                                {poolData.metadata_extended?.info?.social?.github_handle
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'Github'}
-                                        title={'Github'}
-                                        icon={'github'}
-                                        url={'https://github.com/' + poolData.metadata_extended?.info?.social?.github_handle}
-                                    />
-                                    : null}
-                                {poolData.metadata_extended?.info?.social?.linkedin_handle
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'Linkedin'}
-                                        title={'Linkedin'}
-                                        icon={'linkedin'}
-                                        url={'https://linkedin.com/' + poolData.metadata_extended?.info?.social?.linkedin_handle}
-                                    />
-                                    : null}
-                                {poolData.metadata_extended?.info?.social?.facebook_handle
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'Facebook'}
-                                        title={'Facebook'}
-                                        icon={'facebook'}
-                                        url={'https://facebook.com/' + poolData.metadata_extended?.info?.social?.facebook_handle}
-                                    />
-                                    : null}
-                                {poolData.metadata_extended?.info?.social?.youtube_handle
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'Youtube'}
-                                        title={'Youtube'}
-                                        icon={'youtube'}
-                                        url={'https://youtube.com/' + poolData.metadata_extended?.info?.social?.youtube_handle}
-                                    />
-                                    : null}
-                                {poolData.metadata_extended?.info?.social?.telegram_handle
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'Telegram'}
-                                        title={'Telegram'}
-                                        icon={'telegram'}
-                                        url={'https://t.me/' + poolData.metadata_extended?.info?.social?.telegram_handle}
-                                    />
-                                    : null}
-                                {poolData.metadata_extended?.info?.social?.discord_handle
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'Discord'}
-                                        title={'Discord'}
-                                        icon={'discord'}
-                                        url={'https://discord.com/users/' + poolData.metadata_extended?.info?.social?.discord_handle}
-                                    />
-                                    : null}
-                                {poolData.metadata?.url
-                                    ? <LinkIcon
-                                        toolTipId={`pool-tooltip-${poolId}`}
-                                        toolTip={'JSON Metadata'}
-                                        title={'JSON Metadata'}
-                                        icon={'json'}
-                                        url={poolData.metadata?.url}
-                                    />
-                                    : null}
-                            </div>
+                            <Socials poolId={poolId} poolData={poolData} />
                             <Copy text={trimAddress(poolId)} copyText={poolId} className={classMap.poolId}/>
                         </div>
                     </div>
@@ -264,8 +127,9 @@ export const Pool = ({
                         <div className={classMap.actions}>
                             {loadingAction ? <Loader className={'wpcc-loader'}/> : (
                                 <>
-                                    {user?.connected && delegateStake && !userDelegated ?
-                                        <button className={classMap.actionsButton + ' not-delegated'} onClick={handleDelegate}
+                                    {user?.connected && !userDelegated ?
+                                        <button className={classMap.actionsButton + ' not-delegated'}
+                                                onClick={delegateToPool}
                                                 type={'button'}>{options.label_delegate_to_pool}</button> : null}
                                     {user?.connected && userDelegated ? <span
                                         className={classMap.actionsButtonPlaceholder + ' delegated'}>{options.label_delegated_to_pool}</span> : null}
@@ -273,7 +137,7 @@ export const Pool = ({
                                         data-tooltip-id={`pool-tooltip-${poolId}`}
                                         data-tooltip-content={!isComparing ? options.label_compare_add : options.label_compare_remove}
                                         className={classMap.actionsButtonLight}
-                                        onClick={() => handleSetCompare()}
+                                        onClick={() => addToCompare()}
                                         type={'button'}>
                                         {isComparing ? '-' : '+'}
                                     </button>
@@ -285,7 +149,7 @@ export const Pool = ({
                         {poolData.synced_at ? `${options.label_pool_synced} ${new Date(parseInt(poolData.synced_at ?? '0') * 1000)}` : ''}
                     </div>
                 </div>
-            }
+            )}
             <Tooltip id={`pool-tooltip-${poolId}`}/>
         </div>
     )

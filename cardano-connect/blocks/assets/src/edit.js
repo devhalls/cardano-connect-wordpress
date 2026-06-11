@@ -22,6 +22,10 @@ import { useBlockProps } from '@wordpress/block-editor';
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
 import './editor.scss';
+import Title from "../../shared/components/Title";
+import GatedControl from "../../shared/components/form/GatedControl";
+import Pagination from "../../shared/components/Pagination";
+import Gated from "../../shared/components/Gated";
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -32,64 +36,98 @@ import './editor.scss';
  * @return {JSX.Element} Element to render.
  */
 export default function Edit({ attributes, setAttributes, isSelected }) {
+
+	/**
+	 * Create an array of gated logic options.
+	 */
+	const gateOptions = [
+		{label: __('No condition, always show content'), value: 'none'},
+	]
+
+	/**
+	 * Renders a placeholder pool for visual display in the block editor.
+	 * @param id {string}
+	 * @param policy {string|null}
+	 * @return {JSX.Element}
+	 */
+	const renderPlaceholder = (id, policy = null) => (
+		<div key={id} className={`wpcc-placeholder`}>
+			<div className={'wpcc-placeholder-head'}>
+				<div className={'wpcc-placeholder-image'}></div>
+				{policy ? <div className={'wpcc-placeholder-title'}>{policy}</div> : null}
+				<div className={'wpcc-placeholder-title'}>{id}</div>
+			</div>
+		</div>
+	)
+
 	return (
 		<div { ...useBlockProps() }>
-			<div className={'assets-control'}>
-				{isSelected ? (
-					<>
-						<TextareaControl
-							label={__('Whitelist Policy ID(s)')}
-							help={__('(Filter the list of assets by one or more policy ID(s). Enter one Policy ID per line)')}
-							value={attributes.whitelist}
-							onChange={(nextValue) => setAttributes({whitelist: nextValue})}
-						/>
-						<NumberControl
-							label={__('Items per page')}
-							help={__('(Set to 0 to disable pagination, max 100)')}
-							value={attributes.per_page}
-							min={0}
-							max={100}
-							step={1}
-							onChange={(nextValue) => setAttributes({per_page: parseInt(nextValue)})}
-						/>
-						<div style={{ marginTop: 20 }}>
-							<CheckboxControl
-								label={__('Hide the collection titles?')}
-								onChange={(nextValue) => setAttributes({hide_titles: !!nextValue})}
-								checked={!!attributes.hide_titles}
-								value={'hide_titles'}
-							/>
-						</div>
-						<TextareaControl
-							label={__('Not found text')}
-							help={__('(Replaces default options not found text with a custom message for this block)')}
-							value={attributes.not_found}
-							onChange={(nextValue) => setAttributes({not_found: nextValue})}
-						/>
-					</>
-				) : (
-					<>
-						{attributes.whitelist ? (
-							<div>
-								<div className={'assets-title'}>
-									<div className={'assets-image'}></div>
-									<div className={'assets-text'}>
-										{__('Filtered assets by Policy ID(s)')}
-									</div>
-								</div>
-								<div className={'assets-attribute'}>{attributes.whitelist}</div>
+			<div className={`wpcc-block-control ${isSelected ? 'wpcc-block-control-edit' : ''}`}>
+				<div className={`${!isSelected ? 'hidden' : ''}`}>
+					<Title title={'Cardano Wallet Assets List'} />
+					<TextareaControl
+						label={__('Whitelist Policy ID(s)')}
+						help={__('(Filter the list of assets by one or more policy ID(s). Enter one Policy ID per line)')}
+						value={attributes.whitelist}
+						onChange={(nextValue) => setAttributes({whitelist: nextValue})}
+					/>
+					<NumberControl
+						label={__('Items per page')}
+						help={__('(Set to 0 to disable pagination, max 100)')}
+						value={attributes.per_page}
+						min={0}
+						max={100}
+						step={1}
+						onChange={(nextValue) => setAttributes({per_page: parseInt(nextValue)})}
+					/>
+					<CheckboxControl
+						label={__('Hide the collection titles?')}
+						onChange={(nextValue) => setAttributes({hide_titles: !!nextValue})}
+						checked={!!attributes.hide_titles}
+						value={'hide_titles'}
+					/>
+					<TextareaControl
+						label={__('Not found text')}
+						help={__('(Replaces default options not found text with a custom message for this block)')}
+						value={attributes.not_found}
+						onChange={(nextValue) => setAttributes({not_found: nextValue})}
+					/>
+					<GatedControl
+						gated={attributes.gated}
+						gate_hide_component={attributes.gate_hide_component}
+						gated_placeholder={attributes.gated_placeholder}
+						gate={attributes.gate}
+						gateOptions={gateOptions}
+						setAttributes={setAttributes}
+					/>
+				</div>
+				<div className={`${isSelected ? 'hidden' : ''}`}>
+					{!attributes.gate_hide_component ? (
+						<>
+							{(!attributes.per_page && attributes.per_page !==0) || (attributes.per_page > 0) ? (
+								<Pagination per_page={attributes.per_page} />
+							) : null}
+							<div className={`wpcc-placeholder-wrapper wpcc-${attributes.view || 'grid'}`}>
+								{attributes.whitelist?.length > 0
+									? attributes.whitelist.split('\n').map(id => renderPlaceholder('Asset 1', attributes.hide_titles ? null : id))
+									: (
+										<>
+											{renderPlaceholder('Asset 1')}
+											{renderPlaceholder('Asset 2')}
+											{renderPlaceholder('Asset 3')}
+											{renderPlaceholder('Asset 4')}
+										</>
+									)}
 							</div>
-						) : (
-							<div className={'assets-title'}>
-								<div className={'assets-image'}></div>
-								<div className={'assets-text'}>
-									{ __('All wallet assets') }
-								</div>
-							</div>
-						)}
-						<div className={'assets-placeholder'}></div>
-					</>
-				)}
+						</>
+					) : null }
+					<Gated
+						gateOptions={gateOptions}
+						gated_placeholder={attributes.gated_placeholder}
+						gated={attributes.gated}
+						gate={attributes.gate}
+					/>
+				</div>
 			</div>
 		</div>
 	);

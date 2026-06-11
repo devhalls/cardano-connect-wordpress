@@ -15,7 +15,7 @@ export const mockOption: AjaxResponse<Options> = {
         assets_whitelist: null,
         assets_ipfs_endpoint: 'https://ipfs.io/ipfs/',
         assets_placeholder: 'https://upstream.org.uk/wp-content/plugins/cardano-connect/assets/logo-dark.svg',
-        label_connect: 'Cardano Connect',
+        label_connect: 'Connect Wallet',
         label_connect_cancel: 'Cancel',
         label_connected: 'Connected',
         label_disconnect: 'Disconnect',
@@ -62,8 +62,11 @@ export const mockOption: AjaxResponse<Options> = {
         label_pool_lifetime_blocks: 'Lifetime blocks:',
         label_pool_last_epoch_blocks: 'Last epoch blocks:',
         label_pool_delegators: 'Delegators:',
+        label_pool_pledge_not_met_error: 'This pool has not met its pledge and you will NOT receive rewards.',
+        label_pool_stake_saturated_error: 'This pool is saturated and you will receive diminished rewards.',
+        label_pool_is_mithril_signer: 'Mithril signer (active in current epoch)',
         label_compare_view_pools: 'Compare pools',
-        label_compare_view_dreps: 'Compare Dreps',
+        label_compare_view_dreps: 'Compare DReps',
         label_compare_add: 'Add to compare',
         label_compare_remove: 'Remove from compare',
         label_compare_no_items: 'No items selected for comparison',
@@ -197,6 +200,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.01,
         "fixed_cost": "170000000",
         "reward_account": "stake1u8ukz0ml5f98sffj55jhtqgxr3uvvuehlaynsdwyvwvskagk5wf3j",
+        "mithril_signer": true,
         "owners": [
             "stake1u8ukz0ml5f98sffj55jhtqgxr3uvvuehlaynsdwyvwvskagk5wf3j"
         ],
@@ -261,6 +265,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.009,
         "fixed_cost": "340000000",
         "reward_account": "stake1uy89kzrdlpaz5rzu8x95r4qnlpqhd3f8mf09edjp73vcs3qhktrtm",
+        "mithril_signer": false,
         "owners": [
             "stake1uy89kzrdlpaz5rzu8x95r4qnlpqhd3f8mf09edjp73vcs3qhktrtm"
         ],
@@ -305,6 +310,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.049,
         "fixed_cost": "340000000",
         "reward_account": "stake1u98nnlkvkk23vtvf9273uq7cph5ww6u2yq2389psuqet90sv4xv9v",
+        "mithril_signer": false,
         "owners": [
             "stake1u98nnlkvkk23vtvf9273uq7cph5ww6u2yq2389psuqet90sv4xv9v"
         ],
@@ -342,6 +348,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.02,
         "fixed_cost": "170000000",
         "reward_account": "stake1uxxsa2rlkv728pve3ks7kn7c6v68luagdjgwa0medy6vp9suv96q8",
+        "mithril_signer": false,
         "owners": [
             "stake1uxxsa2rlkv728pve3ks7kn7c6v68luagdjgwa0medy6vp9suv96q8"
         ],
@@ -403,6 +410,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.05,
         "fixed_cost": "340000000",
         "reward_account": "stake1u9w20uzsevkxe6vp2nlmqjjrcj4gvcf560tvufuvrcjpxvgqaqg0t",
+        "mithril_signer": false,
         "owners": [
             "stake1u9w20uzsevkxe6vp2nlmqjjrcj4gvcf560tvufuvrcjpxvgqaqg0t"
         ],
@@ -443,6 +451,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.01,
         "fixed_cost": "340000000",
         "reward_account": "stake1uxrkez465cmpdrragd3rhcgrc6lllnasxd7qtl735l489egx9yfxe",
+        "mithril_signer": false,
         "owners": [
             "stake1uyu7kwazvf97ccvqrd5u6zruzep2yedn9z8mzqvl420rafq78lk3g",
             "stake1uy7ccasgje45h004zws56ktp7nvcnktvez5c76hd84n6a6sd2g66l"
@@ -493,6 +502,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.03,
         "fixed_cost": "170000000",
         "reward_account": "stake1u9h7awdh7aestzrkq0k8krfeesc957kmsmcrr0s3rl8wcfqeg3lgn",
+        "mithril_signer": false,
         "owners": [
             "stake1uy9tvq444lvkwtzlalqpn5sswecfat6fgxmham5hushmacs2p9wdq",
             "stake1u9h7awdh7aestzrkq0k8krfeesc957kmsmcrr0s3rl8wcfqeg3lgn",
@@ -535,6 +545,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.02,
         "fixed_cost": "340000000",
         "reward_account": "stake1uy2ntdynjp9ezkxtfnghh6h3lhxnlz9e9geptf8pegdw5zq2c7dzu",
+        "mithril_signer": false,
         "owners": [
             "stake1uyjd7xxuahjznpk6nvmmzf90eqykqqnlm9umltnphlrprpch8nyxg"
         ],
@@ -609,6 +620,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.01,
         "fixed_cost": "340000000",
         "reward_account": "stake1u9jln683r9ysex8v8mft6wt2thha9xpeapm92f52gswzp5sgc5ve4",
+        "mithril_signer": false,
         "owners": [
             "stake1u9msfg7dtt3plmtfznkxljwes70wxsqgc4ql5qxe4et37hcm98d6n"
         ],
@@ -654,6 +666,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0.02,
         "fixed_cost": "340000000",
         "reward_account": "stake1ux5ncxkwkw97jn9cm7ujqgm5lv52espertjlkzxp9epw23qcj03uy",
+        "mithril_signer": false,
         "owners": [
             "stake1uyspqx4xxjmx2hgv8zl048fme2rrzuvw8h92j3mhvy9fkwql02yxj"
         ],
@@ -729,6 +742,7 @@ const poolMockData: ({pool_id: string} & PoolData)[]  = [
         "margin_cost": 0,
         "fixed_cost": "340000000",
         "reward_account": "stake1uy76j6taxp45dwxe5247ch5pcf8hrlqsxknt5ytz3he4nwg5y2yma",
+        "mithril_signer": false,
         "owners": [
             "stake1uycj7mvz8v20swfy7g68czqjavwvqrj7wgya6zy83wuwcps9lv0a0",
             "stake1uy76j6taxp45dwxe5247ch5pcf8hrlqsxknt5ytz3he4nwg5y2yma"

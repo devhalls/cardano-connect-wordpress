@@ -5,6 +5,7 @@ import {RootState} from "./state";
 const initialState: OptionState = {
     version: null,
     plugin_name: null,
+    gates: null,
     mainnet_active: null,
     login_redirect: null,
     logout_redirect: null,
@@ -44,6 +45,9 @@ const initialState: OptionState = {
     label_pool_lifetime_blocks: null,
     label_pool_last_epoch_blocks: null,
     label_pool_delegators: null,
+    label_pool_pledge_not_met_error: null,
+    label_pool_stake_saturated_error: null,
+    label_pool_is_mithril_signer: null,
     label_compare_view_pools: null,
     label_compare_view_dreps: null,
     label_compare_add: null,
