@@ -77,9 +77,9 @@ npm run build-pools
 React is used for the frontend Web3 components and development environment. React scripts and css is then included in the plugin using wp_register_scrtips and wp_register_styles as necessary.
 
 * [typescript](https://www.typescriptlang.org/) v5.5.3
-* [react](https://react.dev/) v18.2.0
-* [react-app-rewired](https://github.com/timarney/react-app-rewired) v2.2.1
-* [mesh.js](https://meshjs.dev) v1.5.2
+* [react](https://react.dev/) v18.3.1
+* [vite](https://vite.dev/) v6.4.0
+* [mesh.js](https://meshjs.dev) v1.9.0
 
 React nodes target block and shortcode HTML outputs defined in WordPress allowing us to bind various React nodes to user defined locations across their WordPress website.
 
@@ -93,8 +93,8 @@ npm install
 # Build output for WordPress to consume
 npm run build
 
-# Start the react dev server (no WordPress using mockData).
-npm run start
+# Start the Vite dev server (no WordPress; uses mock data in index.html).
+npm run dev
 ```
 
 ---

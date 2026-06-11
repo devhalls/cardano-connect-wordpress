@@ -2,7 +2,7 @@ import axios from "axios";
 import qs from "qs";
 import {mockApiAsset, mockApiDrep, mockApiDreps, mockApiPool, mockApiPools, mockOption, mockUser} from "./mock";
 
-const nodeEnv: string = process.env.NODE_ENV
+const nodeEnv: string = import.meta.env.MODE
 
 const instance = axios.create({
     baseURL: `/index.php?rest_route=/cardano-connect/`,

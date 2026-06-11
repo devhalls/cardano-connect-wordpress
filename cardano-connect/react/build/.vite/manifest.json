@@ -1,0 +1,18 @@
+{
+  "index.html": {
+    "file": "static/js/index.D8uGl3pR.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "css": [
+      "static/css/index.D9CzphbE.css"
+    ],
+    "assets": [
+      "sidan_csl_rs_bg.B4hxaGFu.wasm"
+    ]
+  },
+  "node_modules/@sidan-lab/sidan-csl-rs-browser/sidan_csl_rs_bg.wasm": {
+    "file": "sidan_csl_rs_bg.B4hxaGFu.wasm",
+    "src": "node_modules/@sidan-lab/sidan-csl-rs-browser/sidan_csl_rs_bg.wasm"
+  }
+}

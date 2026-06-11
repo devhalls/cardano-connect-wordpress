@@ -56,18 +56,12 @@ class Assets extends Base {
 			return;
 		}
 
-		try {
-			ob_start();
-			include $this->plugin_path . 'react/build/asset-manifest.json';
-			$content = ob_get_contents();
-			ob_clean();
-			$json = json_decode( $content, false, 512, JSON_THROW_ON_ERROR );
-		} catch ( JsonException $e ) {
-			$this->log( $e->getMessage() );
-
+		$entrypoints = $this->getReactEntrypoints();
+		if ( empty( $entrypoints ) ) {
 			return;
 		}
-		foreach ( $json->entrypoints as $entrypoint ) {
+
+		foreach ( $entrypoints as $entrypoint ) {
 			if ( str_contains( $entrypoint, '.js' ) ) {
 				wp_enqueue_script( 'wpcc-react-js', $this->react_cdn . $entrypoint, [], $this->version, true );
 				wp_localize_script( 'wpcc-react-js', 'wpCardanoConnect', [
@@ -77,6 +71,60 @@ class Assets extends Base {
 				wp_enqueue_style( 'wpcc-react-css', $this->react_cdn . $entrypoint, [], $this->version );
 			}
 		}
+	}
+
+	/**
+	 * Resolve built React entrypoint assets from the Vite or legacy CRA manifest.
+	 *
+	 * @return string[]
+	 */
+	private function getReactEntrypoints(): array {
+		$build_dir = $this->plugin_path . 'react/build/';
+
+		$vite_manifest = $build_dir . '.vite/manifest.json';
+		if ( is_readable( $vite_manifest ) ) {
+			try {
+				$json = json_decode( file_get_contents( $vite_manifest ), true, 512, JSON_THROW_ON_ERROR );
+			} catch ( JsonException $e ) {
+				$this->log( $e->getMessage() );
+
+				return [];
+			}
+
+			$entrypoints = [];
+			foreach ( $json as $item ) {
+				if ( empty( $item['isEntry'] ) ) {
+					continue;
+				}
+
+				if ( ! empty( $item['css'] ) ) {
+					foreach ( $item['css'] as $css ) {
+						$entrypoints[] = $css;
+					}
+				}
+
+				if ( ! empty( $item['file'] ) ) {
+					$entrypoints[] = $item['file'];
+				}
+			}
+
+			return $entrypoints;
+		}
+
+		$legacy_manifest = $build_dir . 'asset-manifest.json';
+		if ( ! is_readable( $legacy_manifest ) ) {
+			return [];
+		}
+
+		try {
+			$json = json_decode( file_get_contents( $legacy_manifest ), false, 512, JSON_THROW_ON_ERROR );
+		} catch ( JsonException $e ) {
+			$this->log( $e->getMessage() );
+
+			return [];
+		}
+
+		return $json->entrypoints ?? [];
 	}
 
 	/**
