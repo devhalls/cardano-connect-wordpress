@@ -26,7 +26,7 @@ We assume you have already installed wp-env using your preferred method or using
 
 * [node](https://nodejs.org/en) v20.13.1
 * [wp-env](https://developer.wordpress.org/block-editor/getting-started/devenv/) v10.2.0
-* [wp-scripts](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/) v27.9.0
+* [wp-scripts](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-scripts/) v32.4.0
 
 You can zip the plugin from the root directory using creating cardano-connect.zip
 
